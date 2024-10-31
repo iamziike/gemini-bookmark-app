@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { listenForMessage } from "apps/chrome-extension/src/utils";
 import {
   MessageData,
@@ -16,4 +16,3 @@ const App = () => {
 };
 
 export default App;
-

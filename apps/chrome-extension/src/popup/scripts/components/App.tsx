@@ -1,3 +1,4 @@
+import React from "react";
 import allBookmarkImage from "../../../assets/images/all-bookmarks.svg";
 import addBookmarkImage from "../../../assets/images/add-bookmark.svg";
 import helpImage from "../../../assets/images/help.svg";

@@ -1,5 +1,5 @@
 // Background Script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(() => {
   console.log("INAA");
   //   if (message.type === "GET_BOOKMARKS") {
   //     // Simulating an async operation (e.g., fetching bookmarks)

@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
+    "incremental": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

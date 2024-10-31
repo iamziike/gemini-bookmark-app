@@ -1,3 +1,4 @@
+import React from "react";
 import App from "./scripts/components/App";
 import { createRoot } from "react-dom/client";
 
