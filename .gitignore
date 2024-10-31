@@ -38,3 +38,11 @@ yarn-error.log*
 *.pem
 .parcel-cache
 
+# lock files
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# chrome extensions
+dist.crx
+dist.pem
