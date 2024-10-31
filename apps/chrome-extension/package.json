@@ -1,0 +1,26 @@
+{
+  "name": "page-stash",
+  "version": "0.0.1",
+  "description": "Bookmark your web pages with ease",
+  "scripts": {
+    "dev": "parcel watch ./manifest.json --config @parcel/config-webextension",
+    "build": "parcel build ./manifest.json --config @parcel/config-webextension"
+  },
+  "keywords": [
+    "web-extension"
+  ],
+  "author": "iamziike",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/chrome": "^0.0.279"
+  },
+  "dependencies": {
+    "parcel": "^2.12.0",
+    "@parcel/config-webextension": "^2.12.0",
+    "react": "^18.3.1",
+    "react-bootstrap": "^2.10.5",
+    "react-dom": "^18.3.1"
+  }
+}
