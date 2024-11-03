@@ -46,3 +46,7 @@ package-lock.json
 # chrome extensions
 dist.crx
 dist.pem
+
+# others
+_old/*
+todo.todo

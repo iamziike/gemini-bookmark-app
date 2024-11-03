@@ -12,25 +12,11 @@
         "48": "../../packages/assets/images/logo-icon-48.png",
         "128": "../../packages/assets/images/logo-icon-128.png"
     },
-    "action": {
-        "default_popup": "./src/popup/index.html",
-        "default_icon": {
-            "16": "../../packages/assets/images/logo-icon-16.png",
-            "48": "../../packages/assets/images/logo-icon-48.png",
-            "128": "../../packages/assets/images/logo-icon-128.png"
-        }
+    "side_panel": {
+        "default_path": "./src/sidepanel/index.html"
     },
-    "content_scripts": [
-        {
-            "matches": [
-                "<all_urls>"
-            ],
-            "js": [
-                "./src/content/index.tsx"
-            ]
-        }
-    ],
     "permissions": [
-        "tabs"
+        "tabs",
+        "sidePanel"
     ]
 }

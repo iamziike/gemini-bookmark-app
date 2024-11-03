@@ -1,3 +1,7 @@
+import openSidePanelOnActionClick from "./sidePanelWorker";
+
+openSidePanelOnActionClick();
+
 // Background Script
 chrome.runtime.onMessage.addListener(() => {
   console.log("INAA");

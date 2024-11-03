@@ -7,6 +7,14 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Run whenever any file is saved
+        "match": ".*",
+        "cmd": "echo export {}; >  apps/chrome-extension/src/sidepanel/scripts/reload.ts"
+      }
+    ]
   }
 }
-

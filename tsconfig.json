@@ -13,12 +13,13 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
+      "@constants/*": ["packages/constants/*"],
       "@utils/*": ["packages/utils/*"],
-      "@contants/*": ["packages/contants/*"]
-      // "@components/*": ["packages/components/*"],
-      // "@hooks/*": ["packages/hooks/*"],
-      // "@services/*": ["packages/services/*"],
-      // "@models/*": ["packages/models/*"],
+      "@assets/*": ["packages/assets/*"],
+      "@components/*": ["packages/components/*"],
+      "@hooks/*": ["packages/hooks/*"],
+      "@services/*": ["packages/services/*"],
+      "@models/*": ["packages/models/*"]
     },
 
     "forceConsistentCasingInFileNames": true,
