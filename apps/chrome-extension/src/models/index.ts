@@ -10,3 +10,5 @@ export type MessageData<T, D> = {
 
 export type MessageEventCallbackListener =
   typeof chrome.runtime.onMessage.addListener;
+
+export type BookmarkNode = chrome.bookmarks.BookmarkTreeNode;

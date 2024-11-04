@@ -16,7 +16,8 @@
         "default_path": "./src/sidepanel/index.html"
     },
     "permissions": [
-        "tabs",
-        "sidePanel"
+        "sidePanel",
+        "bookmarks",
+        "favicon"
     ]
 }

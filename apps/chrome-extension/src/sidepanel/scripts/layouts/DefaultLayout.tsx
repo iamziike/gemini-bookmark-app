@@ -9,7 +9,7 @@ const DefaultLayout = ({ children }: Props) => {
   return (
     <div>
       <Header />
-      <div className="mt-2 px-2">{children}</div>
+      <div className="px-2">{children}</div>
     </div>
   );
 };

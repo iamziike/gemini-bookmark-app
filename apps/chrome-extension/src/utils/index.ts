@@ -1,8 +1,4 @@
-import {
-  MessageData,
-  MessageEventCallbackListener,
-  MessageEventType,
-} from "../models";
+import { MessageData, MessageEventCallbackListener } from "../models";
 
 // For some crazy reason doing chrome.runtime.sendMessage from the popup to the content script doesn't work
 // hence this solution
@@ -16,8 +12,8 @@ export const emitMessageFromPopupToContentScript = async <T, D>(
   });
 
   tabs.forEach((tab) => {
-    if (tab.active) {
-      chrome.tabs.sendMessage(tab?.id as any, data);
+    if (tab.active && tab?.id) {
+      chrome.tabs.sendMessage(tab?.id, data);
     }
   });
 };

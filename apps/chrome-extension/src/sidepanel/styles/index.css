@@ -4,10 +4,6 @@
   --dark-white: #d9d9d9;
   --black: #000;
 
-  --primary-bg-color: var(--dark-white);
-  --secondary-bg-color: var(--deep-blue);
-  --primary-text-color: var(--black);
-  --secondary-text-color: var(--white);
   --default-padding: 5px;
   --font-weight: 400;
   --font-family: "Itim", cursive;
@@ -17,9 +13,6 @@
 }
 
 body {
-  width: var(--popup-width);
-  background-color: var(--primary-bg-color);
-  color: var(--primary-text-color);
   font-family: var(--font-family);
   font-optical-sizing: var(--font-optical-sizing);
   font-weight: var(--font-weight);
@@ -27,27 +20,48 @@ body {
   font-variation-settings: var(--font-variation-settings);
 }
 
+.font-family-secondary {
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+  font-size: 14px;
+}
+
 .text-primary {
-  color: var(--primary-text-color) !important;
+  color: var(--black) !important;
 }
 
 .text-secondary {
-  color: var(--secondary-text-color) !important;
+  color: var(--deep-blue) !important;
 }
 
 .bg-primary {
-  background-color: var(--primary-bg-color) !important;
+  background-color: var(--dark-white) !important;
 }
 
 .bg-secondary {
-  background-color: var(--secondary-bg-color) !important;
+  background-color: var(--deep-blue) !important;
 }
 
 .btn-primary {
-  border-color: var(--secondary-bg-color) !important;
-  background-color: var(--secondary-bg-color) !important;
+  border-color: var(--deep-blue) !important;
+  background-color: var(--deep-blue) !important;
 }
 
 .pointer {
   cursor: pointer;
+}
+
+/* card */
+.card {
+  background-color: var(--dark-white);
+}
+
+/* custom */
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

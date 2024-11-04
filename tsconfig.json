@@ -19,7 +19,8 @@
       "@components/*": ["packages/components/*"],
       "@hooks/*": ["packages/hooks/*"],
       "@services/*": ["packages/services/*"],
-      "@models/*": ["packages/models/*"]
+      "@models/*": ["packages/models/*"],
+      "@chrome-extension/*": ["apps/chrome-extension/*"]
     },
 
     "forceConsistentCasingInFileNames": true,
