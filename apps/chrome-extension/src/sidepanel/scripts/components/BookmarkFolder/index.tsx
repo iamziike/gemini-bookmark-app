@@ -5,9 +5,11 @@ import addImage from "@assets/images/add.svg";
 import editImage from "@assets/images/edit.svg";
 import CustomModal from "@components/CustomModal";
 import BookmarkForm from "../../BookmarkForm";
+import useToast from "@chrome-extension/src/hooks/useToast";
 import { BookmarkNode } from "@chrome-extension/src/models";
 import { Collapse } from "react-bootstrap";
 import { isBookmarkALink } from "@chrome-extension/src/utils";
+import { copyToClipboard } from "@utils/index";
 
 interface Props {
   bookmark: BookmarkNode;
@@ -35,6 +37,7 @@ const InitialState: State = {
 };
 
 const BookmarkFolder = ({ bookmark }: Props) => {
+  const { showToast } = useToast();
   const [state, updateState] = useReducer(
     (state: State, newState: Partial<State>) => {
       return { ...state, ...newState };
@@ -44,6 +47,12 @@ const BookmarkFolder = ({ bookmark }: Props) => {
 
   const handleToggleVisibility = () => {
     updateState({ isFolderOpen: !state.isFolderOpen });
+  };
+
+  const handleCopyToClipboard = (url: string) => {
+    copyToClipboard(url ?? "").then(() => {
+      showToast("Copied to clipboard");
+    });
   };
 
   return (
@@ -116,7 +125,12 @@ const BookmarkFolder = ({ bookmark }: Props) => {
                         />
                       </div>
                       <div className="d-flex justify-content-between gap-2 ellipsis align-items-center w-100">
-                        <div className="ellipsis">{child.title}</div>
+                        <div
+                          onClick={() => handleCopyToClipboard(child.url ?? "")}
+                          className="ellipsis pointer"
+                        >
+                          {child.title}
+                        </div>
                         <img
                           src={editImage}
                           alt="edit image"
