@@ -18,6 +18,7 @@
     "permissions": [
         "sidePanel",
         "bookmarks",
-        "favicon"
+        "favicon",
+        "storage"
     ]
 }

@@ -6,11 +6,13 @@ import Settings from "./pages/Settings";
 import DefaultLayout from "./layouts/DefaultLayout";
 import { createRoot } from "react-dom/client";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { SIDE_PANEL_PAGES } from "@chrome-extension/src/constants";
 
 const router = createMemoryRouter(
   [
     {
-      path: "/",
+      path: SIDE_PANEL_PAGES.HOME,
+      errorElement: <div>Something went wrong</div>,
       element: (
         <DefaultLayout>
           <Home />
@@ -18,7 +20,7 @@ const router = createMemoryRouter(
       ),
     },
     {
-      path: "/settings",
+      path: SIDE_PANEL_PAGES.SETTINGS,
       element: (
         <DefaultLayout>
           <Settings />

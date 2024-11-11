@@ -4,3 +4,9 @@ export const MESSAGE_EVENT_TYPES = {
   VIEW_SETTINGS: "viewSettings",
   VIEW_HELP: "viewHelp",
 } as const;
+
+export const SIDE_PANEL_PAGES = {
+  HOME: "/",
+  SETTINGS: "/settings",
+  HELP: "/help",
+} as const;

@@ -50,6 +50,12 @@ body {
   background-color: var(--deep-blue) !important;
 }
 
+.btn-outline-primary {
+  border-color: var(--deep-blue) !important;
+  background-color: transparent !important;
+  color: var(--deep-blue) !important;
+}
+
 .pointer {
   cursor: pointer;
 }
@@ -64,4 +70,8 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.d-block-hover:hover {
+  display: block;
 }
