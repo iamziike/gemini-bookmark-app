@@ -3,9 +3,12 @@ import closedFolderImage from "@assets/images/folder.svg";
 import openFolderImage from "@assets/images/open-folder.svg";
 import addImage from "@assets/images/add.svg";
 import editImage from "@assets/images/edit.svg";
+import deleteImage from "@assets/images/delete.svg";
 import CustomModal from "@components/CustomModal";
 import BookmarkForm from "../../BookmarkForm";
 import useToast from "@chrome-extension/src/hooks/useToast";
+import useCustomAlert from "@components/CustomAlert/useCustomAlert";
+import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import { BookmarkNode } from "@chrome-extension/src/models";
 import { Collapse } from "react-bootstrap";
 import { isBookmarkALink } from "@chrome-extension/src/utils";
@@ -38,6 +41,8 @@ const InitialState: State = {
 
 const BookmarkFolder = ({ bookmark }: Props) => {
   const { showToast } = useToast();
+  const { showSuccessAlert, showConfirmAlert } = useCustomAlert();
+  const { deleteBookmark } = useBookmarks();
   const [state, updateState] = useReducer(
     (state: State, newState: Partial<State>) => {
       return { ...state, ...newState };
@@ -46,12 +51,38 @@ const BookmarkFolder = ({ bookmark }: Props) => {
   );
 
   const handleToggleVisibility = () => {
-    updateState({ isFolderOpen: !state.isFolderOpen });
+    updateState({
+      isFolderOpen: !state.isFolderOpen,
+      selectedBookmarkNode: bookmark,
+    });
   };
 
   const handleCopyToClipboard = (url: string) => {
     copyToClipboard(url ?? "").then(() => {
       showToast("Copied to clipboard");
+    });
+  };
+
+  const handleDeleteBookmark = (bookmark: BookmarkNode) => {
+    showConfirmAlert({
+      content: {
+        title: isBookmarkALink(bookmark)
+          ? "Are you sure you want to delete this bookmark?"
+          : "Are you sure you want to delete this folder?",
+      },
+      onProceed() {
+        deleteBookmark(bookmark, () => {
+          showSuccessAlert({
+            content: {
+              title: "Bookmark deleted",
+            },
+          });
+
+          updateState({
+            selectedBookmarkNode: null,
+          });
+        });
+      },
     });
   };
 
@@ -105,6 +136,17 @@ const BookmarkFolder = ({ bookmark }: Props) => {
                   });
                 }}
               />
+
+              <img
+                hidden={bookmark?.parentId === "0"}
+                src={deleteImage}
+                alt="delete image"
+                className="pointer"
+                width={16}
+                onClick={() => {
+                  handleDeleteBookmark(bookmark);
+                }}
+              />
             </div>
           </div>
 
@@ -126,25 +168,39 @@ const BookmarkFolder = ({ bookmark }: Props) => {
                       </div>
                       <div className="d-flex justify-content-between gap-2 ellipsis align-items-center w-100">
                         <div
-                          onClick={() => handleCopyToClipboard(child.url ?? "")}
                           className="ellipsis pointer"
+                          onClick={() => {
+                            handleCopyToClipboard(child.url ?? "");
+                          }}
                         >
                           {child.title}
                         </div>
-                        <img
-                          src={editImage}
-                          alt="edit image"
-                          className="pointer"
-                          width={16}
-                          onClick={() => {
-                            updateState({
-                              isCreateUpdateFormVisible: true,
-                              isFolderOpen: true,
-                              actionToPerform: "update",
-                              selectedBookmarkNode: child,
-                            });
-                          }}
-                        />
+                        <div className="text-muted d-flex gap-1">
+                          <img
+                            src={editImage}
+                            alt="edit image"
+                            className="pointer"
+                            width={16}
+                            onClick={() => {
+                              updateState({
+                                isCreateUpdateFormVisible: true,
+                                isFolderOpen: true,
+                                actionToPerform: "update",
+                                selectedBookmarkNode: child,
+                              });
+                            }}
+                          />
+
+                          <img
+                            src={deleteImage}
+                            alt="delete image"
+                            className="pointer"
+                            width={16}
+                            onClick={() => {
+                              handleDeleteBookmark(child);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   );

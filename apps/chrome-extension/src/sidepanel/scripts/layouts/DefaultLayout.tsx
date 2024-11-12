@@ -1,5 +1,6 @@
 import React from "react";
 import Header from "../components/Header";
+import CustomAlert from "@components/CustomAlert";
 import { Toaster } from "react-hot-toast";
 
 interface Props {
@@ -11,9 +12,8 @@ const DefaultLayout = ({ children }: Props) => {
     <div>
       <Header />
       <div className="px-2">{children}</div>
-      <div>
-        <Toaster />
-      </div>
+      <Toaster />
+      <CustomAlert />
     </div>
   );
 };

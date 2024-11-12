@@ -60,7 +60,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     getBookmarks();
   };
 
-  const addBookmark = async (newBookmark: CreateBookmarkNode) => {
+  const addBookmark = (newBookmark: CreateBookmarkNode) => {
     chrome.bookmarks.create(
       {
         parentId: newBookmark.parentId,
@@ -76,7 +76,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     );
   };
 
-  const updateBookmark = async (newBookmark: UpdateBookmarkNode) => {
+  const updateBookmark = (newBookmark: UpdateBookmarkNode) => {
     chrome.bookmarks.update(
       newBookmark.id,
       {
@@ -90,6 +90,18 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
         // }
       }
     );
+  };
+
+  const deleteBookmark = (bookmark: BookmarkNode, callback?: VoidFunction) => {
+    const removeBookmark = isBookmarkALink(bookmark)
+      ? chrome.bookmarks.remove
+      : chrome.bookmarks.removeTree;
+
+    removeBookmark(bookmark?.id, () => {
+      callback?.();
+      refreshBookmarks();
+      // deleteBookmarkDescription(bookmarkId);
+    });
   };
 
   //   const deleteBookmarkDescription = async (id: string) => {
@@ -159,6 +171,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     bookmarks,
     addBookmark,
     updateBookmark,
+    deleteBookmark,
     // updateBookmark,
     // addBookmark,
     // deleteBookmakrs,
