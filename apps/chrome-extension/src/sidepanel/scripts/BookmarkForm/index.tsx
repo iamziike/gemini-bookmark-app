@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useReducer } from "react";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import FolderForm from "./FolderForm";
@@ -16,11 +16,10 @@ export interface BookmarkFormProps {
   index?: number;
   actionToPerform?: "create" | "update" | null;
   bookmarkToUpdate?: BookmarkNode | null;
-  defaultTab?: "url" | "folder";
 }
 
 interface State {
-  selectedTab: BookmarkFormProps["defaultTab"];
+  selectedTab: "url" | "folder";
 }
 
 const BookmarkForm = ({ data, onCancel, onSuccess }: Props) => {
@@ -29,15 +28,14 @@ const BookmarkForm = ({ data, onCancel, onSuccess }: Props) => {
       return { ...state, ...newState };
     },
     {
-      selectedTab: data?.defaultTab,
+      selectedTab:
+        data?.actionToPerform === "create" || data?.bookmarkToUpdate?.url
+          ? "url"
+          : "folder",
     }
   );
 
   const disabledUnselectedTab = Boolean(data?.bookmarkToUpdate);
-
-  useEffect(() => {
-    updateState({ selectedTab: data?.defaultTab });
-  }, [disabledUnselectedTab]);
 
   return (
     <Tabs
@@ -47,7 +45,7 @@ const BookmarkForm = ({ data, onCancel, onSuccess }: Props) => {
       className="my-3"
       onSelect={(selectedTab) => {
         updateState({
-          selectedTab: selectedTab as BookmarkFormProps["defaultTab"],
+          selectedTab: selectedTab as State["selectedTab"],
         });
       }}
     >

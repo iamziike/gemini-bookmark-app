@@ -19,6 +19,7 @@
         "sidePanel",
         "bookmarks",
         "favicon",
-        "storage"
+        "storage",
+        "tabs"
     ]
 }

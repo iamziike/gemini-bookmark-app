@@ -4,7 +4,9 @@ import Loading from "@components/Loading";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 
 const BookmarkFolders = () => {
-  const { bookmarks } = useBookmarks({ fetchBookmarks: true });
+  const { bookmarks } = useBookmarks({
+    fetchBookmarks: true,
+  });
 
   return (
     <>

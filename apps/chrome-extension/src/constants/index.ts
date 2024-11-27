@@ -10,3 +10,5 @@ export const SIDE_PANEL_PAGES = {
   SETTINGS: "/settings",
   HELP: "/help",
 } as const;
+
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY as string;

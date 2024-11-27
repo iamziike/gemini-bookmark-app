@@ -96,7 +96,6 @@ const BookmarkFolder = ({ bookmark }: Props) => {
             <img src={closedFolderImage} alt="closed folder" />
           )}
         </div>
-
         <div className="w-100 overflow-hidden">
           <div className="d-flex justify-content-between align-items-center w-100 hover">
             <div
@@ -226,9 +225,6 @@ const BookmarkFolder = ({ bookmark }: Props) => {
           data={{
             index: state?.selectedBookmarkNode?.index,
             actionToPerform: state?.actionToPerform,
-            defaultTab: isBookmarkALink(state?.selectedBookmarkNode)
-              ? "url"
-              : "folder",
             bookmarkToUpdate:
               state?.actionToPerform === "update"
                 ? state?.selectedBookmarkNode

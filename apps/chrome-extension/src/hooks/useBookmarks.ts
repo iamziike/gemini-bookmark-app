@@ -1,9 +1,13 @@
 import { useEffect } from "react";
 import { atom, useAtom } from "jotai";
-import { BOOKMARK_STORAGE_KEY } from "@constants/index";
 import { isBookmarkALink } from "../utils";
 import {
-  BookmarkDescriptionResult,
+  deleteABookmarkedDescription,
+  generateBookmarkDescriptions,
+  getAllBookmarkedLinks,
+  getCachedBookmarkDescriptions,
+} from "@utils/bookmark";
+import {
   BookmarkNode,
   CreateBookmarkNode,
   UpdateBookmarkNode,
@@ -60,34 +64,42 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     getBookmarks();
   };
 
-  const addBookmark = (newBookmark: CreateBookmarkNode) => {
+  const addBookmark = (
+    bookmark: CreateBookmarkNode,
+    callback?: VoidFunction
+  ) => {
     chrome.bookmarks.create(
       {
-        parentId: newBookmark.parentId,
-        title: newBookmark.title,
-        url: newBookmark?.type === "folder" ? undefined : newBookmark.url,
+        parentId: bookmark.parentId,
+        title: bookmark.title,
+        url: bookmark?.type === "folder" ? undefined : bookmark.url,
       },
-      () => {
+      async () => {
+        if (isBookmarkALink(bookmark)) {
+          await generateBookmarkDescriptions([bookmark]);
+        }
+        callback?.();
         refreshBookmarks();
-        // if (isBookmarkALink(newBookmark)) {
-        //   //   setBookmarkDescription(newBookmark);
-        // }
       }
     );
   };
 
-  const updateBookmark = (newBookmark: UpdateBookmarkNode) => {
+  const updateBookmark = (
+    bookmark: UpdateBookmarkNode,
+    callback?: VoidFunction
+  ) => {
     chrome.bookmarks.update(
-      newBookmark.id,
+      bookmark.id,
       {
-        title: newBookmark.title,
-        url: newBookmark?.type === "folder" ? undefined : newBookmark.url,
+        title: bookmark.title,
+        url: bookmark?.type === "folder" ? undefined : bookmark.url,
       },
-      () => {
+      async () => {
+        if (isBookmarkALink(bookmark)) {
+          await generateBookmarkDescriptions([bookmark]);
+        }
+        callback?.();
         refreshBookmarks();
-        // if (isBookmarkALink(newBookmark)) {
-        //   // setBookmarkDescription(newBookmark);
-        // }
       }
     );
   };
@@ -100,66 +112,20 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     removeBookmark(bookmark?.id, () => {
       callback?.();
       refreshBookmarks();
-      // deleteBookmarkDescription(bookmarkId);
+      deleteABookmarkedDescription(bookmark?.id);
     });
   };
 
-  //   const deleteBookmarkDescription = async (id: string) => {
-  //     const bookmarkDescriptions = (await chrome.storage.sync.get(
-  //       BOOKMARK_STORAGE_KEY
-  //     )) as BookmarkDescriptionResult;
+  const getLinksThatMatchSearch = async (query: string) => {
+    const bookmarkDescriptions = await getCachedBookmarkDescriptions();
+    const linksID = Object.keys(bookmarkDescriptions).filter((key) => {
+      return bookmarkDescriptions[key].description.includes(query);
+    });
 
-  //     delete bookmarkDescriptions[BOOKMARK_STORAGE_KEY][id];
-
-  //     await chrome.storage.sync.set({
-  //       [BOOKMARK_STORAGE_KEY]: bookmarkDescriptions[BOOKMARK_STORAGE_KEY],
-  //     });
-
-  //     return true;
-  //   };
-
-  //   const setBookmarkDescription = async ({ id, url }: BookmarkNode) => {
-  //     const bookmarkDescriptions = (await chrome.storage.sync.get(
-  //       BOOKMARK_STORAGE_KEY
-  //     )) as BookmarkDescriptionResult;
-
-  //     const isURLExist =
-  //       bookmarkDescriptions[BOOKMARK_STORAGE_KEY]?.[id]?.url === url;
-
-  //     if (isURLExist) {
-  //       return false;
-  //     }
-
-  //     // generateBookmarkDescription with gemini prompt api
-  //     const description = "This is a description";
-  //     await chrome.storage.sync.set({
-  //       [BOOKMARK_STORAGE_KEY]: {
-  //         ...bookmarkDescriptions,
-  //         [id]: { description, url },
-  //       },
-  //     });
-
-  //     return true;
-  //   };
-
-  //   const getBookmarkByDescription = async (description: string) => {
-  //     const result = await chrome.storage.sync.get(BOOKMARK_STORAGE_KEY);
-  //     console.log(description);
-  //     return Object.keys(result)[0];
-  //   };
-
-  //   const getBookmarks = () => {
-  //     chrome.bookmarks.getTree((bookmarks) => {
-  //       setBookmarks(bookmarks[0].children || []);
-  //     });
-  //   };
-
-  //   const deleteBookmakrs = (bookmarkId: string) => {
-  //     chrome.bookmarks.remove(bookmarkId, () => {
-  //       deleteBookmarkDescription(bookmarkId);
-  //       getBookmarks();
-  //     });
-  //   };
+    return getAllBookmarkedLinks(bookmarks.list).filter(({ id }) =>
+      linksID.includes(id)
+    );
+  };
 
   useEffect(() => {
     if (props?.fetchBookmarks) {
@@ -172,10 +138,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     addBookmark,
     updateBookmark,
     deleteBookmark,
-    // updateBookmark,
-    // addBookmark,
-    // deleteBookmakrs,
-    // getBookmarkByDescription,
+    getLinksThatMatchSearch,
   };
 };
 

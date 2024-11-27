@@ -12,6 +12,7 @@
     "noEmit": true,
     "jsx": "preserve",
     "baseUrl": ".",
+    "types": ["node"],
     "paths": {
       "@constants/*": ["packages/constants/*"],
       "@utils/*": ["packages/utils/*"],

@@ -21,13 +21,15 @@ export type CreateBookmarkNode = chrome.bookmarks.BookmarkTreeNode & {
 
 export type UpdateBookmarkNode = CreateBookmarkNode;
 
-export type BookmarkDescriptionResult = {
-  [BOOKMARK_STORAGE_KEY]: {
-    [id: string]: {
-      description: string;
-      url: string;
-    };
+export type CachedBookmarkDescriptionContent = {
+  [id: string]: {
+    url: string;
+    description: string;
   };
+};
+
+export type CachedBookmarkDescription = {
+  [key in typeof BOOKMARK_STORAGE_KEY]: CachedBookmarkDescriptionContent;
 };
 
 export type BookmarkCreateNode = chrome.bookmarks.BookmarkCreateArg;

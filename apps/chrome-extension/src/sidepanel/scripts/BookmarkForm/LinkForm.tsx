@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CustomInput from "@components/CustomInput";
 import CustomButton from "@components/CustomButton";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
@@ -30,10 +30,10 @@ const LinkForm = ({ data, onCancel, onSuccess }: Props) => {
   const { bookmarkToUpdate, parentId, index } = data;
   const { addBookmark, updateBookmark } = useBookmarks();
   const actionToPerform = data?.bookmarkToUpdate ? "update" : "create";
-  const InitialFormValues: FormValues = {
+  const [initialFormValues, setInitialFormValues] = useState<FormValues>({
     title: bookmarkToUpdate?.title ?? "",
     url: bookmarkToUpdate?.url ?? "",
-  };
+  });
 
   const handleSubmit: FormikHandler<FormValues> = async ({ title, url }) => {
     if (actionToPerform === "update") {
@@ -57,11 +57,24 @@ const LinkForm = ({ data, onCancel, onSuccess }: Props) => {
     onSuccess();
   };
 
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTab = tabs[0];
+      if (currentTab.url && actionToPerform === "create") {
+        setInitialFormValues({
+          title: currentTab.title ?? "",
+          url: currentTab.url,
+        });
+      }
+    });
+  }, []);
+
   return (
     <Formik
       onSubmit={handleSubmit}
-      initialValues={InitialFormValues}
+      initialValues={initialFormValues}
       validationSchema={FormYupValidation}
+      enableReinitialize
     >
       {({ isValid, errors, handleChange, values, isSubmitting }) => (
         <Form>
