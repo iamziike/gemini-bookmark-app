@@ -79,3 +79,7 @@ body {
 .hide-scroll-bar {
   scrollbar-width: none;
 }
+
+.zIndex-1055 {
+  z-index: 1055;
+}

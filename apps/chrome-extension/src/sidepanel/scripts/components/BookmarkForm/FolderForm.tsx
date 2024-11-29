@@ -24,7 +24,7 @@ const FormYupValidation = yup.object({
     .required("Folder name is missing"),
 });
 
-const FolderFolder = ({ data, onCancel, onSuccess }: Props) => {
+const FolderForm = ({ data, onCancel, onSuccess }: Props) => {
   const { bookmarkToUpdate, parentId } = data;
   const { addBookmark, updateBookmark } = useBookmarks();
   const actionToPerform = data?.bookmarkToUpdate ? "update" : "create";
@@ -107,4 +107,4 @@ const FolderFolder = ({ data, onCancel, onSuccess }: Props) => {
   );
 };
 
-export default FolderFolder;
+export default FolderForm;

@@ -118,7 +118,7 @@ const makePrompt = async <T>(prompt: string) => {
 export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
   const prevDescriptions = await getCachedBookmarkDescriptions();
   const newDescriptions: CachedBookmarkDescriptionContent = {};
-  const noOfArrasyPerRequest = Number(
+  const noOfArrasyPerRequest = Math.ceil(
     links.length / MAX_GEMINI_REQUEST_PER_BATCH
   );
   const responseStructure = JSON.stringify({
@@ -187,14 +187,21 @@ export const searchBookmarkDescriptions = async function ({
   }));
   const descriptionsToUse = splitArrayTo2D({
     list: request,
-    noOfElementsPerArray: request.length / MAX_GEMINI_REQUEST_PER_BATCH,
+    noOfElementsPerArray: MAX_GEMINI_REQUEST_PER_BATCH,
   });
+
   const responseStructure = JSON.stringify({
     id: "string",
     url: "string",
     title: "string",
     bookmarkCreatedAt: "UTC",
   });
+
+  console.log(
+    { requestLength: request.length, MAX_GEMINI_REQUEST_PER_BATCH },
+    page,
+    descriptionsToUse
+  );
 
   try {
     const prompt = `I am going to drop a list of links ${JSON.stringify(descriptionsToUse[page - 1])}. 

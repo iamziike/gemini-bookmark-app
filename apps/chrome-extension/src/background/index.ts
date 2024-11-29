@@ -15,20 +15,20 @@ const openSidePanelOnActionClick = () => {
 };
 
 // Even if you use another bookmark app this extension will always be up-to-date
-const initialBookmarkCaching = async () => {
+const initiateBookmarkCaching = async () => {
   const bookmarkUploadState = await getBookmarkUploadState();
   if (bookmarkUploadState.state === "COMPLETED") {
     return;
   }
 
   chrome.bookmarks.getTree(async (tree) => {
-    const links = getAllBookmarkedLinks(tree);
-    await generateBookmarkDescriptions(
-      links.slice(0, MAX_GEMINI_REQUEST_PER_BATCH * 3)
+    const links = getAllBookmarkedLinks(tree).slice(
+      0,
+      MAX_GEMINI_REQUEST_PER_BATCH * 3
     );
-    setTimeout(() => {
-      setBookmarkUploadState({ state: "COMPLETED" });
-    }, 5000);
+    // const links = getAllBookmarkedLinks(tree)
+    await generateBookmarkDescriptions(links);
+    setBookmarkUploadState({ state: "COMPLETED" });
   });
 };
 
@@ -61,13 +61,14 @@ chrome.bookmarks.onMoved.addListener(async (id) => {
   }
 });
 
+// Cleanup
 chrome.bookmarks.onRemoved.addListener(async (id, bookmark) => {
   if (isBookmarkALink(bookmark?.node)) {
     deleteABookmarkedDescription(id);
   }
 });
 
-setTimeout(() => {
-  initialBookmarkCaching();
-}, 3000);
 openSidePanelOnActionClick();
+setTimeout(() => {
+  initiateBookmarkCaching();
+}, 3000);

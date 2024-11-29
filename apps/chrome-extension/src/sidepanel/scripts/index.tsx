@@ -2,7 +2,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/index.css";
 import React from "react";
 import Home from "./pages/Home";
-import Settings from "./pages/Settings";
 import DefaultLayout from "./layouts/DefaultLayout";
 import { createRoot } from "react-dom/client";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -16,14 +15,6 @@ const router = createMemoryRouter(
       element: (
         <DefaultLayout>
           <Home />
-        </DefaultLayout>
-      ),
-    },
-    {
-      path: SIDE_PANEL_PAGES.SETTINGS,
-      element: (
-        <DefaultLayout>
-          <Settings />
         </DefaultLayout>
       ),
     },

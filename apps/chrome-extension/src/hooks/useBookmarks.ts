@@ -40,7 +40,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
         content: {
           title: "Processing Existing Bookmarks",
           message: `Seems like you have a lot of bookmarks, we are currently
-              generating descriptions for them. <br />
+              generating descriptions for them.
               We will update you when its done`,
         },
       });
@@ -52,7 +52,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     ) {
       chrome.storage.local.onChanged.addListener((changes) => {
         if (
-          changes[INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY].newValue?.state ===
+          changes[INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY]?.newValue?.state ===
           "COMPLETED"
         ) {
           setBookmarkUploadState({ isDisplayedCompleteModalBefore: true });

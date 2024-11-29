@@ -6,7 +6,7 @@ export const SIDE_PANEL_PAGES = {
 
 export const GEMINI_API_KEY = process.env.GEMINI_API_KEY as string;
 
-export const MAX_GEMINI_REQUEST_PER_BATCH = 2;
+export const MAX_GEMINI_REQUEST_PER_BATCH = 10;
 
 export const BOOKMARK_DESCRIPTIONS_STORE_KEY = "BOOKMARK_STORAGE_KEY";
 

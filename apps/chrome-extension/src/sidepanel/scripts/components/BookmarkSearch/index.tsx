@@ -14,6 +14,7 @@ import {
   ApiPaginatedResponse,
   GetBookmarkDescriptionFromGemini,
 } from "@chrome-extension/src/models";
+import Loading from "@components/Loading";
 
 const FormYupValidation = yup.object({
   searchQuery: yup.string().required("Search Query is missing"),
@@ -44,20 +45,10 @@ const BookmarkSearch = () => {
     }
   );
 
-  const handleFetchData = async ({
-    searchQuery,
-    page = 1,
-  }: {
-    searchQuery: string;
-    page: number;
-  }) => {
-    if (!searchQuery) {
-      return;
-    }
-
+  const handleSubmit = async ({ searchQuery }: { searchQuery: string }) => {
     const searchResults = await getLinksThatMatchSearch({
       searchQuery,
-      page,
+      page: 1,
     });
 
     updateState({
@@ -65,6 +56,30 @@ const BookmarkSearch = () => {
       searchResults,
       isSearchResultsModalVisible: true,
       isSearchValueFormModalVisible: false,
+    });
+  };
+
+  const handleFetchNewData = async () => {
+    const newPage = (state.searchResults?.page ?? 1) + 1;
+
+    const newSearchResults = await getLinksThatMatchSearch({
+      searchQuery: state?.searchQuery,
+      page: newPage,
+    });
+
+    const updatedSearch = {
+      isPageEnd: newSearchResults?.isPageEnd ?? true,
+      page: newSearchResults?.page ?? 1,
+      pageSize: newSearchResults?.pageSize ?? 1,
+      totalRecords: newSearchResults?.totalRecords ?? 1,
+      data: [
+        ...(state?.searchResults?.data ?? []),
+        ...(newSearchResults?.data ?? []),
+      ],
+    };
+
+    updateState({
+      searchResults: updatedSearch,
     });
   };
 
@@ -82,15 +97,17 @@ const BookmarkSearch = () => {
         visible={state.isSearchValueFormModalVisible}
         showCloseIcon={false}
         padding={false}
+        size="md"
       >
         <Formik
           className="p-3"
           validationSchema={FormYupValidation}
           initialValues={{
-            searchQuery: state?.searchQuery,
+            // searchQuery: state?.searchQuery,
+            searchQuery: "all bookmarks",
           }}
           onSubmit={({ searchQuery }) => {
-            handleFetchData({ searchQuery, page: 1 });
+            handleSubmit({ searchQuery });
           }}
         >
           {({ handleChange, errors, isSubmitting, isValid, values }) => (
@@ -139,57 +156,64 @@ const BookmarkSearch = () => {
         }}
       >
         <div className="p-2 py-1">
-          <h4 className="position-sticky bg-white top-0 border-bottom pb-2 text-center text-uppercase font-family-secondary">
+          <h4 className="position-sticky bg-white top-0 border-bottom text-center text-uppercase font-family-secondary">
             Results
           </h4>
-          <InfiniteScroll
-            className="row gap-2"
-            dataLength={state.searchResults?.totalRecords ?? 1} //This is important field to render the next data
-            hasMore={!state.searchResults?.isPageEnd}
-            loader={<h4>Loading...</h4>}
-            next={() => {
-              const newPage = state.searchResults?.page ?? 1;
-              handleFetchData({
-                searchQuery: state.searchQuery,
-                page: newPage + 1,
-              });
-              console.log("INSIDE");
+          <div
+            id="infiniteBookmarkScroll"
+            className="hide-scroll-bar"
+            style={{
+              maxHeight: "50vh",
+              overflowY: "scroll",
+              overflowX: "hidden",
             }}
           >
-            {state.searchResults?.data?.map((bookmark) => (
-              <div
-                key={bookmark.id}
-                className="d-flex align-items-center pointer gap-2 font-family-secondary text-nowrap"
-                onClick={() => {
-                  console.log(bookmark);
-                  copyToClipboard(bookmark.url);
-                }}
-              >
-                <div className="d-flex align-items-center">
-                  <img
-                    src={getBookmarkFaviconURL(bookmark?.url ?? "")}
-                    alt="url favicon"
-                    width={24}
-                  />
+            <InfiniteScroll
+              className="row gap-2"
+              dataLength={state.searchResults?.data?.length ?? 1} //This is important field to render the next data
+              hasMore={!state.searchResults?.isPageEnd}
+              loader={
+                <div className="text-center w-100">
+                  <Loading isLoading size="small" />
                 </div>
-                <div className="row justify-content-between ellipsis align-items-center">
-                  <div className="ellipsis pointer">{bookmark.title}</div>
-                  <div className="small">
-                    {formatDate({
-                      date: bookmark?.bookmarkCreatedAt,
-                      format: "MMMM D, YYYY • h:mm A",
-                    })}
+              }
+              scrollableTarget="infiniteBookmarkScroll"
+              next={handleFetchNewData}
+            >
+              {state.searchResults?.data?.map((bookmark) => (
+                <div
+                  key={bookmark.id}
+                  className="d-flex align-items-center pointer gap-2 font-family-secondary text-nowrap"
+                  onClick={() => {
+                    copyToClipboard(bookmark.url);
+                  }}
+                >
+                  <div className="d-flex align-items-center">
+                    <img
+                      src={getBookmarkFaviconURL(bookmark?.url ?? "")}
+                      alt="url favicon"
+                      width={24}
+                    />
+                  </div>
+                  <div className="row justify-content-between ellipsis align-items-center">
+                    <div className="ellipsis pointer">{bookmark.title}</div>
+                    <div className="small">
+                      {formatDate({
+                        date: bookmark?.bookmarkCreatedAt,
+                        format: "MMMM D, YYYY • h:mm A",
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {!state.searchResults?.data?.length && (
-              <div className="text-center my-3">
-                <div>Nothing To See</div>
-              </div>
-            )}
-          </InfiniteScroll>
+              {!state.searchResults?.data?.length && (
+                <div className="text-center my-3">
+                  <div>Nothing To See</div>
+                </div>
+              )}
+            </InfiniteScroll>
+          </div>
 
           <div className="position-sticky bg-white bottom-0 d-flex justify-content-end gap-2 pt-2">
             <CustomButton

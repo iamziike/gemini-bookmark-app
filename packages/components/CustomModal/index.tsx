@@ -33,6 +33,8 @@ const CustomModal = ({
       size={modalSize}
       show={Boolean(visible)}
       className={clsx(className, classNames?.modal)}
+      backdropClassName="zIndex-1055"
+      contentClassName="zIndex-1055"
       {...props}
     >
       <Modal.Body className="position-relative p-0 rounded-2 overflow-hidden">
@@ -61,7 +63,7 @@ const CustomModal = ({
           <div
             style={{ maxHeight: "70vh" }}
             className={clsx(
-              "position-relative overflow-scroll hide-scroll-bar",
+              "position-relative overflow-y-scroll hide-scroll-bar",
               {
                 "px-3 pt-0 py-4": padding,
               }
