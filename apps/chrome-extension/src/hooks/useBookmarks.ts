@@ -1,12 +1,15 @@
+import useCustomAlert from "@components/CustomAlert/useCustomAlert";
+import { INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY } from "../constants";
 import { useEffect } from "react";
 import { atom, useAtom } from "jotai";
-import { isBookmarkALink } from "../utils";
 import {
   deleteABookmarkedDescription,
   generateBookmarkDescriptions,
-  getAllBookmarkedLinks,
-  getCachedBookmarkDescriptions,
-} from "@utils/bookmark";
+  getBookmarkUploadState,
+  isBookmarkALink,
+  searchBookmarkDescriptions,
+  setBookmarkUploadState,
+} from "../services/bookmark";
 import {
   BookmarkNode,
   CreateBookmarkNode,
@@ -25,6 +28,45 @@ const bookmarksAtom = atom<{
 
 const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
   const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
+
+  const { showWarningAlert, showSuccessAlert } = useCustomAlert();
+
+  const checkBookmarkUploadState = async () => {
+    const uploadState = await getBookmarkUploadState();
+
+    if (!uploadState.isUserSeenStateBefore && uploadState.state === "PENDING") {
+      setBookmarkUploadState({ isUserSeenStateBefore: true });
+      showWarningAlert({
+        content: {
+          title: "Processing Existing Bookmarks",
+          message: `Seems like you have a lot of bookmarks, we are currently
+              generating descriptions for them. <br />
+              We will update you when its done`,
+        },
+      });
+    }
+
+    if (
+      !uploadState.isDisplayedCompleteModalBefore &&
+      uploadState.state === "PENDING"
+    ) {
+      chrome.storage.local.onChanged.addListener((changes) => {
+        if (
+          changes[INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY].newValue?.state ===
+          "COMPLETED"
+        ) {
+          setBookmarkUploadState({ isDisplayedCompleteModalBefore: true });
+          showSuccessAlert({
+            content: {
+              title: "Bookmarks Processed",
+              message:
+                "Descriptions have been generated for all your bookmarks. 😉",
+            },
+          });
+        }
+      });
+    }
+  };
 
   const getBookmarks = () => {
     setBookmarks((prev) => ({ ...prev, isFetching: true }));
@@ -60,6 +102,13 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     });
   };
 
+  const getBookmarkFaviconURL = (searchURL: string) => {
+    const url = new URL(chrome.runtime.getURL("/_favicon/"));
+    url.searchParams.set("pageUrl", searchURL);
+    url.searchParams.set("size", "64");
+    return url.toString();
+  };
+
   const refreshBookmarks = () => {
     getBookmarks();
   };
@@ -73,11 +122,9 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
         parentId: bookmark.parentId,
         title: bookmark.title,
         url: bookmark?.type === "folder" ? undefined : bookmark.url,
+        index: 0,
       },
-      async () => {
-        if (isBookmarkALink(bookmark)) {
-          await generateBookmarkDescriptions([bookmark]);
-        }
+      () => {
         callback?.();
         refreshBookmarks();
       }
@@ -116,18 +163,22 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     });
   };
 
-  const getLinksThatMatchSearch = async (query: string) => {
-    const bookmarkDescriptions = await getCachedBookmarkDescriptions();
-    const linksID = Object.keys(bookmarkDescriptions).filter((key) => {
-      return bookmarkDescriptions[key].description.includes(query);
+  const getLinksThatMatchSearch = async ({
+    page,
+    searchQuery,
+  }: {
+    searchQuery: string;
+    page: number;
+  }) => {
+    return searchBookmarkDescriptions({
+      page,
+      searchQuery,
     });
-
-    return getAllBookmarkedLinks(bookmarks.list).filter(({ id }) =>
-      linksID.includes(id)
-    );
   };
 
   useEffect(() => {
+    checkBookmarkUploadState();
+
     if (props?.fetchBookmarks) {
       getBookmarks();
     }
@@ -136,6 +187,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
   return {
     bookmarks,
     addBookmark,
+    getBookmarkFaviconURL,
     updateBookmark,
     deleteBookmark,
     getLinksThatMatchSearch,

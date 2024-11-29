@@ -6,7 +6,7 @@ import { Modal, ModalProps } from "react-bootstrap";
 
 interface CustomModalProps extends Pick<ModalProps, "container"> {
   size?: "sm" | "lg" | "xl" | "md";
-  children: React.ReactElement | null;
+  children: React.ReactElement | React.ReactElement[] | null;
   visible: boolean;
   showCloseIcon?: boolean;
   padding?: boolean;
@@ -28,23 +28,26 @@ const CustomModal = ({
 
   return (
     <Modal
-      backdrop="static"
-      show={Boolean(visible)}
-      size={modalSize}
-      className={`${className} ${classNames?.modal}`}
       centered
+      backdrop="static"
+      size={modalSize}
+      show={Boolean(visible)}
+      className={clsx(className, classNames?.modal)}
       {...props}
     >
-      <Modal.Body className="p-0">
-        <div className="w-100 bg-white">
+      <Modal.Body className="position-relative p-0 rounded-2 overflow-hidden">
+        <div className="w-100 bg-primary">
           <div
-            className="progress-meter bg-primary"
-            style={{ width: "100%" }}
+            className="progress-meter bg-secondary"
+            style={{ height: 5, width: "100%" }}
           />
         </div>
         <div className="p-2">
           {showCloseIcon && (
-            <div className="d-flex justify-content-end">
+            <div
+              style={{ top: "0", right: "7px" }}
+              className="d-flex justify-content-end pt-1 px-0 position-absolute z-3"
+            >
               <span
                 className="close"
                 aria-label="Close"
@@ -55,10 +58,16 @@ const CustomModal = ({
               </span>
             </div>
           )}
-          <div>
-            <div className={clsx({ "px-3 pt-0 py-4": padding })}>
-              {children}
-            </div>
+          <div
+            style={{ maxHeight: "70vh" }}
+            className={clsx(
+              "position-relative overflow-scroll hide-scroll-bar",
+              {
+                "px-3 pt-0 py-4": padding,
+              }
+            )}
+          >
+            {children}
           </div>
         </div>
       </Modal.Body>

@@ -75,3 +75,7 @@ body {
 .d-block-hover:hover {
   display: block;
 }
+
+.hide-scroll-bar {
+  scrollbar-width: none;
+}

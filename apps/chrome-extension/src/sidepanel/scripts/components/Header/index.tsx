@@ -1,12 +1,8 @@
 import React from "react";
 import logoImage from "@assets/images/logo.svg";
 import githubLogo from "@assets/images/github.svg";
-import searchImage from "@assets/images/search.svg";
-import settingsImage from "@assets/images/settings.svg";
-import filterImage from "@assets/images/filter.svg";
+import BookmarkSearch from "../BookmarkSearch";
 import { GITHUB_REPO } from "@constants/index";
-import { Link } from "react-router-dom";
-import { SIDE_PANEL_PAGES } from "@chrome-extension/src/constants";
 
 const Header = () => {
   return (
@@ -24,25 +20,8 @@ const Header = () => {
         </div>
       </div>
 
-      <nav className="d-flex gap-2 justify-content-center align-items-center mt-2">
-        <Link
-          to={SIDE_PANEL_PAGES.HOME}
-          className="list-unstyled btn btn-primary"
-        >
-          <img src={searchImage} alt="search image" />
-        </Link>
-        <Link
-          to={SIDE_PANEL_PAGES.SETTINGS}
-          className="list-unstyled btn btn-primary"
-        >
-          <img src={settingsImage} alt="settings image" />
-        </Link>
-        <Link
-          to={SIDE_PANEL_PAGES.HOME}
-          className="list-unstyled btn btn-primary"
-        >
-          <img src={filterImage} alt="filter image" />
-        </Link>
+      <nav className="d-flex gap-2 justify-content-end px-2 align-items-center mt-2">
+        <BookmarkSearch />
       </nav>
     </header>
   );

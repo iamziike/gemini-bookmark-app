@@ -106,7 +106,7 @@ const CustomAlert = () => {
   return (
     <CustomModal
       size="md"
-      showCloseIcon
+      showCloseIcon={state?.showCloseIcon}
       visible={state?.isVisible}
       onDismiss={handleCancel}
     >
@@ -139,13 +139,17 @@ const CustomAlert = () => {
               height={65}
               className="mb-3"
             />
-            <div className="mb-4 text-center">
-              <h6 className="font-weight-bolder">{state?.content?.title}</h6>
+            <div className="mb-2 text-center">
+              <h6 className="font-weight-bolder mb-0">
+                {state?.content?.title}
+              </h6>
               <div>
-                <p>{state?.content?.message}</p>
+                <div className="text-muted small">
+                  {state?.content?.message}
+                </div>
               </div>
             </div>
-            <div className="row justify-content-center">
+            <div className="row justify-content-center mt-0">
               <div className="d-flex flex-column justify-content-center gap-3">
                 <CustomButton
                   className="px-4"
@@ -159,9 +163,9 @@ const CustomAlert = () => {
         )}
 
         {state?.type === "loading" && (
-          <div className="text-center">
+          <div className="text-center mt-2">
             <Loading isLoading />
-            <div className="mt-2">{state?.content?.title || "Loading..."}</div>
+            <div className="">{state?.content?.title || "Loading..."}</div>
             <div className="text-muted">{state?.content?.message}</div>
           </div>
         )}

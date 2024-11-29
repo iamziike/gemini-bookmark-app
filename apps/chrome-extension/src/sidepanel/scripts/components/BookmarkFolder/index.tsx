@@ -5,14 +5,13 @@ import addImage from "@assets/images/add.svg";
 import editImage from "@assets/images/edit.svg";
 import deleteImage from "@assets/images/delete.svg";
 import CustomModal from "@components/CustomModal";
-import BookmarkForm from "../../BookmarkForm";
-import useToast from "@chrome-extension/src/hooks/useToast";
 import useCustomAlert from "@components/CustomAlert/useCustomAlert";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
+import BookmarkForm from "../BookmarkForm";
 import { BookmarkNode } from "@chrome-extension/src/models";
 import { Collapse } from "react-bootstrap";
-import { isBookmarkALink } from "@chrome-extension/src/utils";
 import { copyToClipboard } from "@utils/index";
+import { isBookmarkALink } from "@chrome-extension/src/services/bookmark";
 
 interface Props {
   bookmark: BookmarkNode;
@@ -25,13 +24,6 @@ interface State {
   actionToPerform: "update" | "create" | null;
 }
 
-const getfaviconURL = (searchURL: string) => {
-  const url = new URL(chrome.runtime.getURL("/_favicon/"));
-  url.searchParams.set("pageUrl", searchURL);
-  url.searchParams.set("size", "32");
-  return url.toString();
-};
-
 const InitialState: State = {
   isFolderOpen: false,
   selectedBookmarkNode: null,
@@ -40,9 +32,8 @@ const InitialState: State = {
 };
 
 const BookmarkFolder = ({ bookmark }: Props) => {
-  const { showToast } = useToast();
   const { showSuccessAlert, showConfirmAlert } = useCustomAlert();
-  const { deleteBookmark } = useBookmarks();
+  const { deleteBookmark, getBookmarkFaviconURL } = useBookmarks();
   const [state, updateState] = useReducer(
     (state: State, newState: Partial<State>) => {
       return { ...state, ...newState };
@@ -58,13 +49,12 @@ const BookmarkFolder = ({ bookmark }: Props) => {
   };
 
   const handleCopyToClipboard = (url: string) => {
-    copyToClipboard(url ?? "").then(() => {
-      showToast("Copied to clipboard");
-    });
+    copyToClipboard(url);
   };
 
   const handleDeleteBookmark = (bookmark: BookmarkNode) => {
     showConfirmAlert({
+      showCloseIcon: true,
       content: {
         title: isBookmarkALink(bookmark)
           ? "Are you sure you want to delete this bookmark?"
@@ -160,7 +150,7 @@ const BookmarkFolder = ({ bookmark }: Props) => {
                     >
                       <div>
                         <img
-                          src={getfaviconURL(child?.url ?? "")}
+                          src={getBookmarkFaviconURL(child?.url ?? "")}
                           alt="url favicon"
                           width={16}
                         />
@@ -223,7 +213,6 @@ const BookmarkFolder = ({ bookmark }: Props) => {
             updateState({ isCreateUpdateFormVisible: false });
           }}
           data={{
-            index: state?.selectedBookmarkNode?.index,
             actionToPerform: state?.actionToPerform,
             bookmarkToUpdate:
               state?.actionToPerform === "update"

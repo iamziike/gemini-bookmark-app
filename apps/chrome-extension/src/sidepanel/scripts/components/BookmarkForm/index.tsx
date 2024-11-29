@@ -13,7 +13,6 @@ interface Props {
 
 export interface BookmarkFormProps {
   parentId?: string;
-  index?: number;
   actionToPerform?: "create" | "update" | null;
   bookmarkToUpdate?: BookmarkNode | null;
 }

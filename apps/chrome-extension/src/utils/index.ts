@@ -1,8 +1,5 @@
-import {
-  BookmarkNode,
-  MessageData,
-  MessageEventCallbackListener,
-} from "../models";
+import toast from "react-hot-toast";
+import { MessageData, MessageEventCallbackListener } from "../models";
 
 // For some crazy reason doing chrome.runtime.sendMessage from the popup to the content script doesn't work
 // hence this solution
@@ -32,6 +29,16 @@ export const listenForMessage: MessageEventCallbackListener = (callback) => {
 
 export const removeMessageListerner = chrome.runtime.onMessage.removeListener;
 
-export const isBookmarkALink = (value?: BookmarkNode | null) => {
-  return Boolean(value?.url?.length);
+export const showToast = (message: string) => {
+  toast.dismiss();
+
+  toast(message, {
+    icon: "🔥",
+    duration: 2000,
+    style: {
+      borderRadius: "10px",
+      background: "#2589E6",
+      color: "#fff",
+    },
+  });
 };

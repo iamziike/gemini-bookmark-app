@@ -27,34 +27,45 @@ const FormYupValidation = yup.object({
 });
 
 const LinkForm = ({ data, onCancel, onSuccess }: Props) => {
-  const { bookmarkToUpdate, parentId, index } = data;
+  const { bookmarkToUpdate, parentId } = data;
   const { addBookmark, updateBookmark } = useBookmarks();
-  const actionToPerform = data?.bookmarkToUpdate ? "update" : "create";
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialFormValues, setInitialFormValues] = useState<FormValues>({
     title: bookmarkToUpdate?.title ?? "",
     url: bookmarkToUpdate?.url ?? "",
   });
+  const actionToPerform = data?.bookmarkToUpdate ? "update" : "create";
+
+  const handleSuccess = () => {
+    setIsSubmitting(false);
+    onSuccess();
+  };
 
   const handleSubmit: FormikHandler<FormValues> = async ({ title, url }) => {
+    setIsSubmitting(true);
     if (actionToPerform === "update") {
-      updateBookmark({
-        id: bookmarkToUpdate?.id ?? "",
+      updateBookmark(
+        {
+          id: bookmarkToUpdate?.id ?? "",
+          title,
+          type: "url",
+        },
+        handleSuccess
+      );
+      return;
+    }
+
+    addBookmark(
+      {
         title,
-        index,
-        type: "url",
-      });
-    } else {
-      addBookmark({
-        title,
-        index,
+        index: 0,
         id: bookmarkToUpdate?.id ?? "",
         type: "url",
         parentId,
         url,
-      });
-    }
-
-    onSuccess();
+      },
+      handleSuccess
+    );
   };
 
   useEffect(() => {
@@ -76,7 +87,7 @@ const LinkForm = ({ data, onCancel, onSuccess }: Props) => {
       validationSchema={FormYupValidation}
       enableReinitialize
     >
-      {({ isValid, errors, handleChange, values, isSubmitting }) => (
+      {({ isValid, errors, handleChange, values }) => (
         <Form>
           <div className="d-flex justify-content-center align-items-center">
             <div className="w-100">

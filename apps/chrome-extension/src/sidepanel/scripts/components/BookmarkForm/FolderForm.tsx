@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import React from "react";
+import React, { useState } from "react";
 import CustomInput from "@components/CustomInput";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import CustomButton from "@components/CustomButton";
@@ -28,27 +28,38 @@ const FolderFolder = ({ data, onCancel, onSuccess }: Props) => {
   const { bookmarkToUpdate, parentId } = data;
   const { addBookmark, updateBookmark } = useBookmarks();
   const actionToPerform = data?.bookmarkToUpdate ? "update" : "create";
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const InitialFormValues: FormValues = {
     title: bookmarkToUpdate?.title ?? "",
   };
 
+  const handleSuccess = () => {
+    setIsSubmitting(false);
+    onSuccess();
+  };
+
   const handleSubmit: FormikHandler<FormValues> = async ({ title }) => {
+    setIsSubmitting(true);
     if (actionToPerform === "update") {
-      updateBookmark({
-        id: bookmarkToUpdate?.id ?? "",
-        title,
-        type: "folder",
-      });
-    } else {
-      addBookmark({
+      updateBookmark(
+        {
+          id: bookmarkToUpdate?.id ?? "",
+          title,
+          type: "folder",
+        },
+        handleSuccess
+      );
+      return;
+    }
+    addBookmark(
+      {
         id: bookmarkToUpdate?.id ?? "",
         title,
         type: "folder",
         parentId,
-      });
-    }
-
-    onSuccess();
+      },
+      handleSuccess
+    );
   };
 
   return (
@@ -57,7 +68,7 @@ const FolderFolder = ({ data, onCancel, onSuccess }: Props) => {
       initialValues={InitialFormValues}
       validationSchema={FormYupValidation}
     >
-      {({ isValid, errors, handleChange, values, isSubmitting }) => (
+      {({ isValid, errors, handleChange, values }) => (
         <Form>
           <div className="d-flex justify-content-center align-items-center">
             <div className="w-100">

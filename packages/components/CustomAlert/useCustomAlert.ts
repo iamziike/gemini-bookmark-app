@@ -45,25 +45,25 @@ const useCustomAlert = () => {
   };
 
   const showSuccessAlert = (
-    detail: Omit<AlertModalState, "isVisible" | "type">
+    detail?: Omit<AlertModalState, "isVisible" | "type">
   ) => {
     showAlert({ ...detail, type: "success" });
   };
 
   const showErrorAlert = (
-    detail: Omit<AlertModalState, "isVisible" | "type">
+    detail?: Omit<AlertModalState, "isVisible" | "type">
   ) => {
     showAlert({ ...detail, type: "error" });
   };
 
   const showWarningAlert = (
-    detail: Omit<AlertModalState, "isVisible" | "type">
+    detail?: Omit<AlertModalState, "isVisible" | "type">
   ) => {
     showAlert({ ...detail, type: "warning" });
   };
 
   const showConfirmAlert = (
-    detail: Omit<AlertModalState, "isVisible" | "type">
+    detail?: Omit<AlertModalState, "isVisible" | "type">
   ) => {
     showAlert({ ...detail, type: "confirm" });
   };

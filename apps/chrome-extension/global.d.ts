@@ -15,6 +15,12 @@ declare module "*.css" {
   export default content;
 }
 
+declare module "*.jpg" {
+  const content: string;
+
+  export default content;
+}
+
 declare module "*.png" {
   const content: string;
 
@@ -25,4 +31,11 @@ declare namespace NodeJS {
   interface ProcessEnv {
     REACT_APP_GEMINI_API_KEY: string;
   }
+}
+
+type CustomSearchParams = "search";
+
+interface URLSearchParams {
+  get(name: CustomSearchParams): string | null;
+  set(name: CustomSearchParams, value: string): void;
 }
