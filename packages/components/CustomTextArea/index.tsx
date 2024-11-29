@@ -33,7 +33,7 @@ const CustomTextArea = ({
           <div className="text-danger small" style={{ position: "relative" }}>
             {error}
           </div>
-        )}{" "}
+        )}
       </label>
     </div>
   );

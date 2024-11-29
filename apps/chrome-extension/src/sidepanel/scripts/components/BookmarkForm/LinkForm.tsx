@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import CustomInput from "@components/CustomInput";
 import CustomButton from "@components/CustomButton";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
+import customYupValidation from "@constants/validationSchemas";
 import { Formik, Form } from "formik";
 import { BookmarkFormProps } from "./index";
 import { FormikHandler } from "@chrome-extension/src/models";
@@ -19,11 +20,8 @@ interface FormValues {
 }
 
 const FormYupValidation = yup.object({
-  title: yup
-    .string()
-    .typeError("URL title is  not a word")
-    .required("URL title is missing"),
-  url: yup.string().typeError("URL is not a link").required("URL is missing"),
+  title: customYupValidation.urlTitle,
+  url: customYupValidation.url,
 });
 
 const LinkForm = ({ data, onCancel, onSuccess }: Props) => {

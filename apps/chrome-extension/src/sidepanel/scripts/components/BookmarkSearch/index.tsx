@@ -6,6 +6,8 @@ import CustomButton from "@components/CustomButton";
 import CustomTextArea from "@components/CustomTextArea";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import InfiniteScroll from "react-infinite-scroll-component";
+import Loading from "@components/Loading";
+import customYupValidation from "@constants/validationSchemas";
 import { SIDE_PANEL_PAGES } from "@chrome-extension/src/constants";
 import { Link } from "react-router-dom";
 import { Form, Formik } from "formik";
@@ -14,10 +16,9 @@ import {
   ApiPaginatedResponse,
   GetBookmarkDescriptionFromGemini,
 } from "@chrome-extension/src/models";
-import Loading from "@components/Loading";
 
 const FormYupValidation = yup.object({
-  searchQuery: yup.string().required("Search Query is missing"),
+  searchQuery: customYupValidation.searchQuery,
 });
 
 interface State {

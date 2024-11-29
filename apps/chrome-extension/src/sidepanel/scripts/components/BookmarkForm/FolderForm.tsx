@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import CustomInput from "@components/CustomInput";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import CustomButton from "@components/CustomButton";
+import customYupValidation from "@constants/validationSchemas";
 import { Formik, Form } from "formik";
 import { BookmarkFormProps } from "./index";
 import { FormikHandler } from "@chrome-extension/src/models";
@@ -18,10 +19,7 @@ interface FormValues {
 }
 
 const FormYupValidation = yup.object({
-  title: yup
-    .string()
-    .typeError("Folder name is  not a word")
-    .required("Folder name is missing"),
+  title: customYupValidation.title,
 });
 
 const FolderForm = ({ data, onCancel, onSuccess }: Props) => {
