@@ -2,8 +2,8 @@
   --deep-blue: #2589e6;
   --white: #fff;
   --dark-white: #d9d9d9;
+  --opacified-dark-white: rgb(208, 203, 203);
   --black: #000;
-
   --default-padding: 5px;
   --font-weight: 400;
   --font-family: "Itim", cursive;
@@ -82,4 +82,16 @@ body {
 
 .zIndex-1055 {
   z-index: 1055;
+}
+
+.no-list-style {
+  list-style: none !important;
+}
+
+.drag-n-drop-dragging-Source {
+  opacity: 0.7;
+}
+
+.drag-n-drop-drop-target {
+  background-color: var(--opacified-dark-white) !important;
 }

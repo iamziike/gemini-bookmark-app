@@ -1,5 +1,6 @@
 import { FormikHelpers } from "formik";
 import { BOOKMARK_DESCRIPTIONS_STORE_KEY } from "../constants";
+import { NodeModel } from "@minoru/react-dnd-treeview";
 
 export type CustomObject = {
   [key: string]: string;
@@ -26,6 +27,11 @@ export type MessageEventCallbackListener =
   typeof chrome.runtime.onMessage.addListener;
 
 export type BookmarkNode = chrome.bookmarks.BookmarkTreeNode;
+
+export type BookmarkNodeWithoutChildren = Omit<
+  chrome.bookmarks.BookmarkTreeNode,
+  "children"
+>;
 
 export type CreateBookmarkNode = chrome.bookmarks.BookmarkTreeNode & {
   type: "folder" | "url";
@@ -62,4 +68,11 @@ export type BOOKMARK_UPLOAD_STATE = {
   state: "PENDING" | "COMPLETED";
   isUserSeenStateBefore: boolean;
   isDisplayedCompleteModalBefore: boolean;
+};
+
+export type DragAndDropNode = NodeModel & {
+  data: Pick<
+    BookmarkNode,
+    "url" | "unmodifiable" | "dateAdded" | "dateGroupModified" | "index"
+  >;
 };

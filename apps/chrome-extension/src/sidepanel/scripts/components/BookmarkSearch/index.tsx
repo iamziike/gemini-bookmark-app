@@ -103,8 +103,7 @@ const BookmarkSearch = () => {
           className="p-3"
           validationSchema={FormYupValidation}
           initialValues={{
-            // searchQuery: state?.searchQuery,
-            searchQuery: "all bookmarks",
+            searchQuery: state?.searchQuery,
           }}
           onSubmit={({ searchQuery }) => {
             handleSubmit({ searchQuery });

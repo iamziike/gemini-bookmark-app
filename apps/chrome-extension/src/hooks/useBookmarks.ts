@@ -34,7 +34,10 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
   const checkBookmarkUploadState = async () => {
     const uploadState = await getBookmarkUploadState();
 
-    if (!uploadState.isUserSeenStateBefore && uploadState.state === "PENDING") {
+    if (
+      !uploadState?.isUserSeenStateBefore &&
+      uploadState?.state === "PENDING"
+    ) {
       setBookmarkUploadState({ isUserSeenStateBefore: true });
       showWarningAlert({
         content: {
@@ -47,8 +50,8 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     }
 
     if (
-      !uploadState.isDisplayedCompleteModalBefore &&
-      uploadState.state === "PENDING"
+      !uploadState?.isDisplayedCompleteModalBefore &&
+      uploadState?.state === "PENDING"
     ) {
       chrome.storage.local.onChanged.addListener((changes) => {
         if (
@@ -151,6 +154,21 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
     );
   };
 
+  const moveBookmark = (
+    data: {
+      id: string;
+      targetIndex: number;
+      parentId: string;
+    },
+    callback?: () => void
+  ) => {
+    const { id, parentId, targetIndex } = data;
+    chrome.bookmarks.move(id, { index: targetIndex, parentId }, () => {
+      callback?.();
+      refreshBookmarks();
+    });
+  };
+
   const deleteBookmark = (bookmark: BookmarkNode, callback?: VoidFunction) => {
     const removeBookmark = isBookmarkALink(bookmark)
       ? chrome.bookmarks.remove
@@ -187,6 +205,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
   return {
     bookmarks,
     addBookmark,
+    moveBookmark,
     getBookmarkFaviconURL,
     updateBookmark,
     deleteBookmark,

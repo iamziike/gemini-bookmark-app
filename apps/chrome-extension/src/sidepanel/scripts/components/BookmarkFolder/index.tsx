@@ -92,7 +92,7 @@ const BookmarkFolder = ({ bookmark }: Props) => {
               onClick={handleToggleVisibility}
               className="text-primary pointer"
             >
-              {bookmark?.title || "Untitled Folder"}
+              {bookmark?.title || "Untitled"}
             </div>
             <div className="text-muted d-flex gap-1">
               <img

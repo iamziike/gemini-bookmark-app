@@ -1,4 +1,3 @@
-import { MAX_GEMINI_REQUEST_PER_BATCH } from "../constants";
 import {
   deleteABookmarkedDescription,
   generateBookmarkDescriptions,
@@ -17,16 +16,12 @@ const openSidePanelOnActionClick = () => {
 // Even if you use another bookmark app this extension will always be up-to-date
 const initiateBookmarkCaching = async () => {
   const bookmarkUploadState = await getBookmarkUploadState();
-  if (bookmarkUploadState.state === "COMPLETED") {
+  if (bookmarkUploadState?.state === "COMPLETED") {
     return;
   }
 
   chrome.bookmarks.getTree(async (tree) => {
-    const links = getAllBookmarkedLinks(tree).slice(
-      0,
-      MAX_GEMINI_REQUEST_PER_BATCH * 3
-    );
-    // const links = getAllBookmarkedLinks(tree)
+    const links = getAllBookmarkedLinks(tree);
     await generateBookmarkDescriptions(links);
     setBookmarkUploadState({ state: "COMPLETED" });
   });
@@ -61,7 +56,6 @@ chrome.bookmarks.onMoved.addListener(async (id) => {
   }
 });
 
-// Cleanup
 chrome.bookmarks.onRemoved.addListener(async (id, bookmark) => {
   if (isBookmarkALink(bookmark?.node)) {
     deleteABookmarkedDescription(id);
@@ -71,4 +65,4 @@ chrome.bookmarks.onRemoved.addListener(async (id, bookmark) => {
 openSidePanelOnActionClick();
 setTimeout(() => {
   initiateBookmarkCaching();
-}, 3000);
+}, 2000);

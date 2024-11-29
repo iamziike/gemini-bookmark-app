@@ -12,6 +12,7 @@ import {
   BookmarkNode,
   CachedBookmarkDescription,
   CachedBookmarkDescriptionContent,
+  DragAndDropNode,
   GetBookmarkDescriptionFromGemini,
 } from "../models";
 
@@ -60,6 +61,28 @@ export const getAllBookmarkedLinks = (nodes: BookmarkNode[]) => {
   getLinks(nodes);
 
   return links;
+};
+
+export const transformBookmarksToDragAndDropNodes = (nodes: BookmarkNode[]) => {
+  const dragAndDropNodes: DragAndDropNode[] = [];
+  const getNodes = (nodes: BookmarkNode[]) => {
+    for (const node of nodes) {
+      dragAndDropNodes.push({
+        id: node.id,
+        parent: node?.parentId ?? "",
+        text: node?.title,
+        droppable: !node.url,
+        data: { ...node },
+      });
+      if (node.children) {
+        getNodes(node.children);
+      }
+    }
+  };
+
+  getNodes(nodes);
+
+  return dragAndDropNodes;
 };
 
 export const deleteABookmarkedDescription = async (
@@ -118,9 +141,6 @@ const makePrompt = async <T>(prompt: string) => {
 export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
   const prevDescriptions = await getCachedBookmarkDescriptions();
   const newDescriptions: CachedBookmarkDescriptionContent = {};
-  const noOfArrasyPerRequest = Math.ceil(
-    links.length / MAX_GEMINI_REQUEST_PER_BATCH
-  );
   const responseStructure = JSON.stringify({
     id: "string",
     url: "string",
@@ -130,7 +150,7 @@ export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
   });
   const dividedArray = splitArrayTo2D({
     list: links,
-    noOfElementsPerArray: noOfArrasyPerRequest,
+    noOfElementsPerArray: MAX_GEMINI_REQUEST_PER_BATCH,
   });
 
   for (const subArray of dividedArray) {
@@ -144,9 +164,9 @@ export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
       If you cant figure out description using the entire url try to get the description using its origin only.
       Do try and generate or figure out what the website really is about.
       If you can't generate any summary return the url as the description not "null" just the url for its value. 
-      I want the response to start with '{' and end with '}'. 
+      I want the response to start with { and end with }'. 
       Don't add anything special.
-      Just return the structure i stated earlier which is { ${responseStructure} }, cool?.
+      Just return the structure i stated earlier which is { bookmarks: [${responseStructure}, ${responseStructure}] }, cool?.
       And within it should be the link and description pair. Got it?`;
 
     const result = await makePrompt<{
@@ -197,12 +217,6 @@ export const searchBookmarkDescriptions = async function ({
     bookmarkCreatedAt: "UTC",
   });
 
-  console.log(
-    { requestLength: request.length, MAX_GEMINI_REQUEST_PER_BATCH },
-    page,
-    descriptionsToUse
-  );
-
   try {
     const prompt = `I am going to drop a list of links ${JSON.stringify(descriptionsToUse[page - 1])}. 
         And I want you to filter and return the objects that its description, url or title matches or resembles this query: ${searchQuery}.
@@ -230,7 +244,7 @@ export const getBookmarkUploadState = async () => {
   const response = (await chrome.storage.local.get(
     INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY
   )) as {
-    [key in typeof INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY]: BOOKMARK_UPLOAD_STATE;
+    [key in typeof INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY]: BOOKMARK_UPLOAD_STATE | null;
   };
 
   return response[INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY];
