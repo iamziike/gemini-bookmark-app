@@ -1,6 +1,5 @@
-import clsx from "clsx";
-import classNames from "./Loading.module.css";
 import React from "react";
+import clsx from "clsx";
 
 interface Props {
   isLoading?: boolean;
@@ -12,12 +11,12 @@ const Loading = ({ isLoading, size = "medium" }: Props) => {
     isLoading && (
       <div className="text-center opacity-50">
         <div
-          className={clsx("spinner-border text-primary", {
-            [classNames["spinner-small"]]: size === "small",
-            [classNames["spinner-medium"]]: size === "medium",
-            [classNames["spinner-large"]]: size === "large",
-          })}
           role="status"
+          className={clsx("spinner-border text-primary", {
+            "spinner-small": size === "small",
+            "spinner-medium": size === "medium",
+            "spinner-large": size === "large",
+          })}
         >
           <span className="visually-hidden">Loading...</span>
         </div>

@@ -119,3 +119,9 @@ body {
 .fade-out-slow {
   animation: fade-out-in 5s ease-in-out infinite;
 }
+
+.spinner-small {
+  width: 15px !important;
+  height: 15px !important;
+  border-width: 1px !important;
+}
