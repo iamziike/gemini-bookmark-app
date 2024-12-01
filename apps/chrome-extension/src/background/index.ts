@@ -1,13 +1,13 @@
 import { sendMessage, waitFor } from "@utils/index";
-import { INITIAL_BOOKMARKS_GENERATE_DESCRIPTIONS_STORE_KEY } from "../constants";
+import { INITIAL_BOOKMARKS_GENERATE_BATCH_REQUEST_STORE_KEY } from "../constants";
 import { BookmarkDescriptionBatchRequestState } from "../models";
 import {
   deleteABookmarkedDescription,
   generateBookmarkDescriptions,
   getAllBookmarkedLinks,
-  getBookmarkUploadState,
+  getInitialBookmarkDescriptionGenerateState,
   isBookmarkALink,
-  setBookmarkUploadState,
+  setInitialBookmarkDescriptionGenerateState,
 } from "../services/bookmark";
 
 const openSidePanelOnActionClick = () => {
@@ -18,8 +18,9 @@ const openSidePanelOnActionClick = () => {
 
 // Even if you use another bookmark app this extension will always be up-to-date
 const initiateBookmarkCaching = async () => {
-  const bookmarkUploadState = await getBookmarkUploadState();
-  if (bookmarkUploadState?.state === "COMPLETED") {
+  const bookmarkDescriptionGenerateState =
+    await getInitialBookmarkDescriptionGenerateState();
+  if (bookmarkDescriptionGenerateState?.state === "COMPLETED") {
     return;
   }
 
@@ -34,7 +35,7 @@ const initiateBookmarkCaching = async () => {
           nextBatch,
           pending: links.length - completed,
         };
-        sendMessage(INITIAL_BOOKMARKS_GENERATE_DESCRIPTIONS_STORE_KEY, data);
+        sendMessage(INITIAL_BOOKMARKS_GENERATE_BATCH_REQUEST_STORE_KEY, data);
       }
     );
 
@@ -44,12 +45,12 @@ const initiateBookmarkCaching = async () => {
       return;
     }
 
-    setBookmarkUploadState({ state: "COMPLETED" });
+    setInitialBookmarkDescriptionGenerateState({ state: "COMPLETED" });
   });
 };
 
 chrome.runtime.onInstalled.addListener(() => {
-  setBookmarkUploadState({
+  setInitialBookmarkDescriptionGenerateState({
     state: "PENDING",
     isDisplayedCompleteModalBefore: false,
     isUserSeenStateBefore: false,

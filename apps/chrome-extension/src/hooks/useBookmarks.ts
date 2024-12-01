@@ -1,14 +1,14 @@
 import useCustomAlert from "@components/CustomAlert/useCustomAlert";
-import { INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY } from "../constants";
+import { INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY } from "../constants";
 import { useEffect } from "react";
 import { atom, useAtom } from "jotai";
 import {
   deleteABookmarkedDescription,
   generateBookmarkDescriptions,
-  getBookmarkUploadState,
+  getInitialBookmarkDescriptionGenerateState,
   isBookmarkALink,
   searchBookmarkDescriptions,
-  setBookmarkUploadState,
+  setInitialBookmarkDescriptionGenerateState,
 } from "../services/bookmark";
 import {
   BookmarkNode,
@@ -31,39 +31,37 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
 
   const { showWarningAlert, showSuccessAlert } = useCustomAlert();
 
-  const checkBookmarkUploadState = async () => {
-    const uploadState = await getBookmarkUploadState();
+  const checkInitialBookmarkDescriptionGenerateState = async () => {
+    const response = await getInitialBookmarkDescriptionGenerateState();
 
-    if (
-      !uploadState?.isUserSeenStateBefore &&
-      uploadState?.state === "PENDING"
-    ) {
-      setBookmarkUploadState({ isUserSeenStateBefore: true });
+    if (!response?.isUserSeenStateBefore && response?.state === "PENDING") {
+      setInitialBookmarkDescriptionGenerateState({
+        isUserSeenStateBefore: true,
+      });
       showWarningAlert({
         content: {
           title: "Processing Existing Bookmarks",
-          message: `Seems like you have a lot of bookmarks, we are currently
-              generating descriptions for them.
-              We will update you when it's done`,
+          message:
+            "We are currently processing all your existing bookmarks. This may take some time but we will update you when it's done",
         },
       });
     }
 
     if (
-      !uploadState?.isDisplayedCompleteModalBefore &&
-      uploadState?.state === "PENDING"
+      !response?.isDisplayedCompleteModalBefore &&
+      response?.state === "PENDING"
     ) {
       chrome.storage.local.onChanged.addListener((changes) => {
         if (
-          changes[INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY]?.newValue?.state ===
-          "COMPLETED"
+          changes[INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY]?.newValue
+            ?.state === "COMPLETED"
         ) {
-          setBookmarkUploadState({ isDisplayedCompleteModalBefore: true });
+          setInitialBookmarkDescriptionGenerateState({
+            isDisplayedCompleteModalBefore: true,
+          });
           showSuccessAlert({
             content: {
-              title: "Bookmarks Processed",
-              message:
-                "Descriptions have been generated for all your bookmarks. 😉",
+              title: "All Bookmarks Processed 😉",
             },
           });
         }
@@ -195,7 +193,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
   };
 
   useEffect(() => {
-    checkBookmarkUploadState();
+    checkInitialBookmarkDescriptionGenerateState();
 
     if (props?.fetchBookmarks) {
       getBookmarks();

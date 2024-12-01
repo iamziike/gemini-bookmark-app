@@ -1,9 +1,9 @@
 import React, { useEffect, useReducer } from "react";
 import useTextOverflow from "@hooks/useTextOverflow";
 import clsx from "clsx";
-import { INITIAL_BOOKMARKS_GENERATE_DESCRIPTIONS_STORE_KEY } from "@chrome-extension/src/constants";
+import { INITIAL_BOOKMARKS_GENERATE_BATCH_REQUEST_STORE_KEY } from "@chrome-extension/src/constants";
 import { BookmarkDescriptionBatchRequestState } from "@chrome-extension/src/models";
-import { getBookmarkUploadState } from "@chrome-extension/src/services/bookmark";
+import { getInitialBookmarkDescriptionGenerateState } from "@chrome-extension/src/services/bookmark";
 import { getPercentage, listenToMessage } from "@utils/index";
 
 interface State {
@@ -32,8 +32,8 @@ const BookmarkDescriptionGenerateProgess = () => {
     deps: [state],
   });
 
-  const listenToDescriptionsCaching = async () => {
-    const response = await getBookmarkUploadState();
+  const listenToBookmarkDescriptionsCaching = async () => {
+    const response = await getInitialBookmarkDescriptionGenerateState();
 
     if (response?.state === "PENDING") {
       updateState({
@@ -41,7 +41,7 @@ const BookmarkDescriptionGenerateProgess = () => {
       });
 
       listenToMessage(
-        INITIAL_BOOKMARKS_GENERATE_DESCRIPTIONS_STORE_KEY,
+        INITIAL_BOOKMARKS_GENERATE_BATCH_REQUEST_STORE_KEY,
         (data: BookmarkDescriptionBatchRequestState) => {
           if (!data?.nextBatch) {
             updateState({
@@ -73,7 +73,7 @@ const BookmarkDescriptionGenerateProgess = () => {
   };
 
   useEffect(() => {
-    listenToDescriptionsCaching();
+    listenToBookmarkDescriptionsCaching();
   }, []);
 
   if (!state?.visible) {

@@ -64,7 +64,7 @@ export type FormikHandler<T> = (
   formikHelpers: FormikHelpers<T>
 ) => void;
 
-export type BOOKMARK_UPLOAD_STATE = {
+export type INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE = {
   state: "PENDING" | "COMPLETED";
   isUserSeenStateBefore: boolean;
   isDisplayedCompleteModalBefore: boolean;

@@ -3,12 +3,12 @@ import { splitArrayTo2D, transformGeminiResponseToJSON } from "@utils/index";
 import {
   BOOKMARK_DESCRIPTIONS_STORE_KEY,
   GEMINI_API_KEY,
-  INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY,
+  INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY,
   MAX_GEMINI_REQUEST_PER_BATCH,
 } from "../constants";
 import {
   ApiPaginatedResponse,
-  BOOKMARK_UPLOAD_STATE,
+  INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE,
   BookmarkNode,
   CachedBookmarkDescription,
   CachedBookmarkDescriptionContent,
@@ -252,23 +252,23 @@ export const searchBookmarkDescriptions = async function ({
   }
 };
 
-export const getBookmarkUploadState = async () => {
+export const getInitialBookmarkDescriptionGenerateState = async () => {
   const response = (await chrome.storage.local.get(
-    INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY
+    INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY
   )) as {
-    [key in typeof INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY]: BOOKMARK_UPLOAD_STATE | null;
+    [key in typeof INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY]: INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE | null;
   };
 
-  return response[INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY];
+  return response[INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY];
 };
 
-export const setBookmarkUploadState = async (
-  newState: Partial<BOOKMARK_UPLOAD_STATE>
+export const setInitialBookmarkDescriptionGenerateState = async (
+  newState: Partial<INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE>
 ) => {
-  const currentState = await getBookmarkUploadState();
+  const currentState = await getInitialBookmarkDescriptionGenerateState();
 
   chrome.storage.local.set({
-    [INITIAL_BOOKMARKS_UPLOAD_STATE_STORE_KEY]: {
+    [INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY]: {
       ...currentState,
       ...newState,
     },
