@@ -21,8 +21,8 @@
     "@parcel/config-webextension": "^2.12.0",
     "parcel": "^2.12.0",
     "process": "^0.11.10",
+    "react-hook-inview": "^4.5.1",
     "react-hot-toast": "^2.4.1",
-    "react-infinite-scroll-component": "^6.1.0",
     "react-router-dom": "^6.27.0",
     "react-shadow": "^20.5.0"
   }

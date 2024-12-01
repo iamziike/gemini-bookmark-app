@@ -91,13 +91,13 @@ const BookmarkFolder = ({
       {isBookmarkALink(bookmark) ? (
         <div
           key={bookmark?.id}
-          className="d-flex gap-1 font-family-secondary text-nowrap mb-1"
+          className="d-flex gap-2 font-family-secondary text-nowrap mb-1"
         >
-          <div>
+          <div className="d-flex justify-content-center align-items-center">
             <img
               src={getBookmarkFaviconURL(bookmark?.url ?? "")}
               alt="url favicon"
-              width={16}
+              width={20}
             />
           </div>
           <div className="d-flex justify-content-between gap-2 ellipsis align-items-center w-100">
@@ -138,14 +138,14 @@ const BookmarkFolder = ({
         </div>
       ) : (
         <div
-          className="d-flex gap-1 overflow-hidden pointer"
+          className="d-flex gap-2 overflow-hidden pointer"
           {...dragOverProps}
         >
           <div className="pointer" onClick={handleToggleVisibility}>
             {isFolderOpen ? (
-              <img src={openFolderImage} alt="closed folder" />
+              <img width={20} src={openFolderImage} alt="closed folder" />
             ) : (
-              <img src={closedFolderImage} alt="closed folder" />
+              <img width={20} src={closedFolderImage} alt="closed folder" />
             )}
           </div>
           <div className="w-100 overflow-hidden">

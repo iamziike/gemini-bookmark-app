@@ -39,7 +39,7 @@ const initiateBookmarkCaching = async () => {
       }
     );
 
-    if (response?.isError) {
+    if (response?.type === "error" && response?.status === 424) {
       await waitFor(20);
       initiateBookmarkCaching();
       return;

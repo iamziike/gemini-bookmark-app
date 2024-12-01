@@ -85,6 +85,7 @@ const BookmarkFolders = () => {
                 <div
                   style={{
                     marginLeft: depth * 25,
+                    marginBottom: item?.data?.url ? 7 : 0,
                   }}
                 >
                   <BookmarkFolder

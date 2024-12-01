@@ -118,14 +118,13 @@ const makePrompt = async <T>(prompt: string) => {
     const data = transformGeminiResponseToJSON<T>(result.response.text());
 
     return {
-      isError: false,
       data,
     };
   } catch (err) {
-    const error = err as Error & { status: string };
+    const error = err as { status: number; message: string };
 
     return {
-      isError: true,
+      type: "error",
       data: null,
       status: error?.status,
       message: error?.message,
@@ -143,6 +142,15 @@ export const generateBookmarkDescriptions = async (
 ) => {
   const bookmarkDescriptions = await getCachedBookmarkDescriptions();
   links = links.filter((link) => !bookmarkDescriptions[link?.id]);
+  const formatedLinks = links.map((link) => {
+    return {
+      id: link?.id,
+      title: link?.title,
+      url: link?.url,
+      date: new Date(Number(link?.dateAdded)),
+    };
+  });
+
   const responseStructure = JSON.stringify({
     id: "string",
     url: "string",
@@ -151,7 +159,7 @@ export const generateBookmarkDescriptions = async (
     bookmarkCreatedAt: "UTC Time Format",
   });
   const dividedArray = splitArrayTo2D({
-    list: links,
+    list: formatedLinks,
     noOfElementsPerArray: MAX_GEMINI_REQUEST_PER_BATCH,
   });
 
@@ -178,7 +186,7 @@ export const generateBookmarkDescriptions = async (
       }[];
     }>(prompt);
 
-    if (result?.isError) {
+    if (result?.type === "error") {
       return result;
     }
 

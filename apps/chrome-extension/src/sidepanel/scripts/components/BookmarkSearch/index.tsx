@@ -1,17 +1,17 @@
 import * as yup from "yup";
-import React, { useReducer } from "react";
+import React, { useCallback, useReducer, useState } from "react";
 import CustomModal from "@components/CustomModal";
 import searchImage from "@assets/images/search.svg";
 import CustomButton from "@components/CustomButton";
 import CustomTextArea from "@components/CustomTextArea";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
-import InfiniteScroll from "react-infinite-scroll-component";
 import Loading from "@components/Loading";
 import customYupValidation from "@constants/validationSchemas";
 import { SIDE_PANEL_PAGES } from "@chrome-extension/src/constants";
 import { Link } from "react-router-dom";
 import { Form, Formik } from "formik";
 import { copyToClipboard, formatDate } from "@utils/index";
+import { useInViewEffect } from "react-hook-inview";
 import {
   ApiPaginatedResponse,
   GetBookmarkDescriptionFromGemini,
@@ -26,6 +26,7 @@ interface State {
   isSearchResultsModalVisible: boolean;
   searchQuery: string;
   searchResultCurrentPageIndex: number;
+  isSearching: boolean;
   searchResults: ApiPaginatedResponse<
     GetBookmarkDescriptionFromGemini[]
   > | null;
@@ -33,11 +34,14 @@ interface State {
 
 const BookmarkSearch = () => {
   const { getLinksThatMatchSearch, getBookmarkFaviconURL } = useBookmarks();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setIsLoadMoreDataVisible] = useState(false);
   const [state, updateState] = useReducer(
     (state: State, newState: Partial<State>) => {
       return { ...state, ...newState };
     },
     {
+      isSearching: false,
       isSearchValueFormModalVisible: false,
       isSearchResultsModalVisible: false,
       searchResultCurrentPageIndex: 1,
@@ -46,43 +50,81 @@ const BookmarkSearch = () => {
     }
   );
 
-  const handleSubmit = async ({ searchQuery }: { searchQuery: string }) => {
-    const searchResults = await getLinksThatMatchSearch({
-      searchQuery,
-      page: 1,
-    });
+  const loadMoreDataRef = useInViewEffect(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        console.log(state?.searchResults);
 
-    updateState({
-      searchQuery,
-      searchResults,
-      isSearchResultsModalVisible: true,
-      isSearchValueFormModalVisible: false,
-    });
-  };
+        handleFetchNewData(
+          (state.searchResults?.page ?? 1) + 1,
+          state?.searchQuery
+        );
+      }
+      setIsLoadMoreDataVisible(entry.isIntersecting);
+    },
+    { threshold: 0.5 },
+    [state]
+  );
 
-  const handleFetchNewData = async () => {
-    const newPage = (state.searchResults?.page ?? 1) + 1;
+  const handleSubmit = useCallback(
+    async ({ searchQuery }: { searchQuery: string }) => {
+      if (searchQuery?.toLowerCase() === state?.searchQuery?.toLowerCase()) {
+        updateState({
+          isSearchResultsModalVisible: true,
+          isSearchValueFormModalVisible: false,
+        });
+        return;
+      }
 
-    const newSearchResults = await getLinksThatMatchSearch({
-      searchQuery: state?.searchQuery,
-      page: newPage,
-    });
+      updateState({ isSearching: true });
 
-    const updatedSearch = {
-      isPageEnd: newSearchResults?.isPageEnd ?? true,
-      page: newSearchResults?.page ?? 1,
-      pageSize: newSearchResults?.pageSize ?? 1,
-      totalRecords: newSearchResults?.totalRecords ?? 1,
-      data: [
-        ...(state?.searchResults?.data ?? []),
-        ...(newSearchResults?.data ?? []),
-      ],
-    };
+      const response = await getLinksThatMatchSearch({
+        searchQuery,
+        page: 1,
+      });
 
-    updateState({
-      searchResults: updatedSearch,
-    });
-  };
+      updateState({
+        isSearching: false,
+        searchQuery,
+        searchResults: response,
+        isSearchResultsModalVisible: true,
+        isSearchValueFormModalVisible: false,
+      });
+    },
+    [state]
+  );
+
+  const handleFetchNewData = useCallback(
+    async (page: number, searchQuery: string) => {
+      updateState({
+        isSearching: true,
+      });
+
+      const response = await getLinksThatMatchSearch({
+        searchQuery,
+        page,
+      });
+
+      const updatedSearch = {
+        isPageEnd: response?.isPageEnd ?? true,
+        page: response?.page ?? 1,
+        pageSize: response?.pageSize ?? 1,
+        totalRecords: response?.totalRecords ?? 1,
+        data: [
+          ...(state?.searchResults?.data ?? []),
+          ...(response?.data ?? []),
+        ],
+      };
+
+      updateState({
+        isSearching: false,
+        searchResults: updatedSearch,
+        isSearchResultsModalVisible: true,
+        isSearchValueFormModalVisible: false,
+      });
+    },
+    [state]
+  );
 
   return (
     <>
@@ -103,11 +145,9 @@ const BookmarkSearch = () => {
         <Formik
           className="p-3"
           validationSchema={FormYupValidation}
+          onSubmit={handleSubmit}
           initialValues={{
             searchQuery: state?.searchQuery,
-          }}
-          onSubmit={({ searchQuery }) => {
-            handleSubmit({ searchQuery });
           }}
         >
           {({ handleChange, errors, isSubmitting, isValid, values }) => (
@@ -168,18 +208,7 @@ const BookmarkSearch = () => {
               overflowX: "hidden",
             }}
           >
-            <InfiniteScroll
-              className="row gap-2"
-              dataLength={state.searchResults?.data?.length ?? 1} //This is important field to render the next data
-              hasMore={!state.searchResults?.isPageEnd}
-              loader={
-                <div className="text-center w-100">
-                  <Loading isLoading size="small" />
-                </div>
-              }
-              scrollableTarget="infiniteBookmarkScroll"
-              next={handleFetchNewData}
-            >
+            <div className="row gap-2">
               {state.searchResults?.data?.map((bookmark) => (
                 <div
                   key={bookmark.id}
@@ -212,7 +241,19 @@ const BookmarkSearch = () => {
                   <div>Nothing To See</div>
                 </div>
               )}
-            </InfiniteScroll>
+
+              {state?.isSearching && (
+                <div className="text-center w-100">
+                  <Loading isLoading size="small" />
+                </div>
+              )}
+
+              {!state?.searchResults?.isPageEnd && !state?.isSearching && (
+                <div ref={loadMoreDataRef} className="text-center w-100">
+                  Load more data
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="position-sticky bg-white bottom-0 d-flex justify-content-end gap-2 pt-2">
