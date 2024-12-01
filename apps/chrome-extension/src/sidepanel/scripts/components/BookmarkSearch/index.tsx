@@ -122,7 +122,7 @@ const BookmarkSearch = () => {
                   name="searchQuery"
                   style={{ resize: "none" }}
                   value={values.searchQuery}
-                  placeholder="Bookmarks that start with Gemini and were added on Monday around 4pm?"
+                  placeholder="Bookmarks that start with Gemini and were added on Monday around 4pm"
                   error={errors?.searchQuery}
                 />
               </label>

@@ -95,3 +95,27 @@ body {
 .drag-n-drop-drop-target {
   background-color: var(--opacified-dark-white) !important;
 }
+
+.progress-meter {
+  transition: width 1s ease-in-out 0s;
+}
+
+/* fade-n- fade-out */
+@keyframes fade-out-in {
+  0% {
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.fade-out-slow {
+  animation: fade-out-in 5s ease-in-out infinite;
+}

@@ -1,7 +1,8 @@
 import React from "react";
 import openFolderImage from "@assets/images/open-folder-white.svg";
-import NewBookmarkFolder from "../NewBookmarkFolder";
+import BookmarkFolder from "../BookmarkFolder";
 import Loading from "@components/Loading";
+import BookmarkSearch from "../BookmarkSearch";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import { transformBookmarksToDragAndDropNodes } from "@chrome-extension/src/services/bookmark";
 import {
@@ -20,16 +21,17 @@ const BookmarkFolders = () => {
 
   return (
     <>
-      <div>
-        <h5 className="d-flex ">
-          Bookmarks{" "}
-          <span className="ms-1 d-flex align-items-center small font-monospace text-muted">
-            <Loading size="small" isLoading={bookmarks?.isFetching} />
-
-            <span hidden={!bookmarks?.quantity}>({bookmarks?.quantity})</span>
-          </span>
-        </h5>
+      <div className="d-flex gap-2 justify-content-end align-items-center">
+        <BookmarkSearch />
       </div>
+
+      <h5 className="d-flex">
+        Bookmarks{" "}
+        <span className="ms-1 d-flex align-items-center small font-monospace text-muted">
+          <Loading size="small" isLoading={bookmarks?.isFetching} />
+          <span hidden={!bookmarks?.quantity}>({bookmarks?.quantity})</span>
+        </span>
+      </h5>
       <div className="position-relative">
         <DndProvider backend={MultiBackend} options={getBackendOptions()}>
           <Tree
@@ -85,7 +87,7 @@ const BookmarkFolders = () => {
                     marginLeft: depth * 25,
                   }}
                 >
-                  <NewBookmarkFolder
+                  <BookmarkFolder
                     isFolderOpen={isOpen}
                     onToggleVisibility={onToggle}
                     bookmark={{

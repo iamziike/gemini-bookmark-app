@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { splitArrayTo2D } from "@utils/index";
+import { splitArrayTo2D, transformGeminiResponseToJSON } from "@utils/index";
 import {
   BOOKMARK_DESCRIPTIONS_STORE_KEY,
   GEMINI_API_KEY,
@@ -16,7 +16,7 @@ import {
   GetBookmarkDescriptionFromGemini,
 } from "../models";
 
-const getCachedBookmarkDescriptions = async () => {
+export const getCachedBookmarkDescriptions = async () => {
   const result = (await chrome.storage.local.get(
     BOOKMARK_DESCRIPTIONS_STORE_KEY
   )) as CachedBookmarkDescription;
@@ -28,17 +28,21 @@ const cacheBookmarkedLinkDescriptions = async (
   callback?: VoidFunction
 ) => {
   const prevDescriptions = await getCachedBookmarkDescriptions();
-  chrome.storage.local.set(
+  const newDescriptions = {
+    ...prevDescriptions,
+    ...descriptions,
+  };
+
+  await chrome.storage.local.set(
     {
-      [BOOKMARK_DESCRIPTIONS_STORE_KEY]: {
-        ...prevDescriptions,
-        ...descriptions,
-      },
+      [BOOKMARK_DESCRIPTIONS_STORE_KEY]: newDescriptions,
     },
     () => {
       callback?.();
     }
   );
+
+  return newDescriptions;
 };
 
 export const isBookmarkALink = (value?: BookmarkNode | null) => {
@@ -111,36 +115,34 @@ const makePrompt = async <T>(prompt: string) => {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const data = transformGeminiResponseToJSON<T>(result.response.text());
 
-    let sanitizedData = text.replace("```", "").replace("```", "").trim();
-
-    if (sanitizedData.startsWith("json")) {
-      sanitizedData = sanitizedData.replace("json", "");
-    }
-
-    if (sanitizedData.endsWith("json")) {
-      sanitizedData = sanitizedData.replace("json", "");
-    }
-
-    if (sanitizedData.includes("```json")) {
-      sanitizedData = sanitizedData.replace("```json", "");
-    }
-
-    if (sanitizedData.includes("```")) {
-      sanitizedData = sanitizedData.replace("```", "");
-    }
-
-    return JSON.parse(sanitizedData) as T;
+    return {
+      isError: false,
+      data,
+    };
   } catch (err) {
-    console.log(err);
-    return null;
+    const error = err as Error & { status: string };
+
+    return {
+      isError: true,
+      data: null,
+      status: error?.status,
+      message: error?.message,
+    };
   }
 };
 
-export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
-  const prevDescriptions = await getCachedBookmarkDescriptions();
-  const newDescriptions: CachedBookmarkDescriptionContent = {};
+export const generateBookmarkDescriptions = async (
+  links: BookmarkNode[],
+  onBatchComplete?: (args: {
+    currentDescriptions: CachedBookmarkDescriptionContent;
+    links: BookmarkNode[];
+    nextBatch: BookmarkNode[];
+  }) => void
+) => {
+  const bookmarkDescriptions = await getCachedBookmarkDescriptions();
+  links = links.filter((link) => !bookmarkDescriptions[link?.id]);
   const responseStructure = JSON.stringify({
     id: "string",
     url: "string",
@@ -153,21 +155,18 @@ export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
     noOfElementsPerArray: MAX_GEMINI_REQUEST_PER_BATCH,
   });
 
-  for (const subArray of dividedArray) {
-    const sanitizedSubArray = subArray.filter(
-      (data) => prevDescriptions[data?.id]?.url !== data?.url
-    );
-    const prompt = `I am going to drop a list of links ${JSON.stringify(sanitizedSubArray)}. 
-      And I want you to generate this JSON structure 
-      { bookmarks: [${responseStructure}, ${responseStructure}] }. 
-      The description should be a summary of the url content.
-      If you cant figure out description using the entire url try to get the description using its origin only.
-      Do try and generate or figure out what the website really is about.
-      If you can't generate any summary return the url as the description not "null" just the url for its value. 
-      I want the response to start with { and end with }'. 
-      Don't add anything special.
-      Just return the structure i stated earlier which is { bookmarks: [${responseStructure}, ${responseStructure}] }, cool?.
-      And within it should be the link and description pair. Got it?`;
+  for (const [index, subArray] of dividedArray.entries()) {
+    const prompt = `I am going to drop a list of links ${JSON.stringify(subArray)}. 
+        And I want you to generate this JSON structure 
+        { bookmarks: [${responseStructure}, ${responseStructure}] }. 
+        The description should be a summary of the url content.
+        If you cant figure out description using the entire url try to get the description using its origin only.
+        Do try and generate or figure out what the website really is about.
+        If you can't generate any summary return the url as the description not "null" just the url for its value. 
+        I want the response to start with { and end with }'. 
+        Don't add anything special.
+        Just return the structure i stated earlier which is { bookmarks: [${responseStructure}, ${responseStructure}] }, cool?.
+        And within it should be the link and description pair. Got it?`;
 
     const result = await makePrompt<{
       bookmarks: {
@@ -179,18 +178,30 @@ export const generateBookmarkDescriptions = async (links: BookmarkNode[]) => {
       }[];
     }>(prompt);
 
-    result?.bookmarks.forEach((bookmark) => {
-      newDescriptions[bookmark.id] = {
+    if (result?.isError) {
+      return result;
+    }
+
+    result?.data?.bookmarks.forEach((bookmark) => {
+      bookmarkDescriptions[bookmark.id] = {
         bookmarkCreatedAt: bookmark?.bookmarkCreatedAt,
         description: bookmark?.description,
         title: bookmark?.title,
         url: bookmark?.url,
       };
     });
-    cacheBookmarkedLinkDescriptions(newDescriptions);
+
+    const currentDescriptions =
+      await cacheBookmarkedLinkDescriptions(bookmarkDescriptions);
+
+    onBatchComplete?.({
+      links,
+      currentDescriptions,
+      nextBatch: dividedArray[index + 1],
+    });
   }
 
-  return newDescriptions;
+  return bookmarkDescriptions;
 };
 
 export const searchBookmarkDescriptions = async function ({
@@ -225,7 +236,8 @@ export const searchBookmarkDescriptions = async function ({
         I want the response to start with '[' and end with ']'. 
         And within it should be an array [${responseStructure}]. Got it?`;
 
-    const data = await makePrompt<GetBookmarkDescriptionFromGemini[]>(prompt);
+    const { data } =
+      await makePrompt<GetBookmarkDescriptionFromGemini[]>(prompt);
 
     return {
       data,

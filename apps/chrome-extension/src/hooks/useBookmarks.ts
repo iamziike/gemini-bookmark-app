@@ -44,7 +44,7 @@ const useBookmarks = (props?: { fetchBookmarks: boolean }) => {
           title: "Processing Existing Bookmarks",
           message: `Seems like you have a lot of bookmarks, we are currently
               generating descriptions for them.
-              We will update you when its done`,
+              We will update you when it's done`,
         },
       });
     }

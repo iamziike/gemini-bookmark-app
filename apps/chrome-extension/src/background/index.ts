@@ -1,3 +1,6 @@
+import { sendMessage, waitFor } from "@utils/index";
+import { INITIAL_BOOKMARKS_GENERATE_DESCRIPTIONS_STORE_KEY } from "../constants";
+import { BookmarkDescriptionBatchRequestState } from "../models";
 import {
   deleteABookmarkedDescription,
   generateBookmarkDescriptions,
@@ -22,7 +25,25 @@ const initiateBookmarkCaching = async () => {
 
   chrome.bookmarks.getTree(async (tree) => {
     const links = getAllBookmarkedLinks(tree);
-    await generateBookmarkDescriptions(links);
+    const response = await generateBookmarkDescriptions(
+      links,
+      ({ currentDescriptions, links, nextBatch }) => {
+        const completed = Object.keys(currentDescriptions).length;
+        const data: BookmarkDescriptionBatchRequestState = {
+          completed,
+          nextBatch,
+          pending: links.length - completed,
+        };
+        sendMessage(INITIAL_BOOKMARKS_GENERATE_DESCRIPTIONS_STORE_KEY, data);
+      }
+    );
+
+    if (response?.isError) {
+      await waitFor(20);
+      initiateBookmarkCaching();
+      return;
+    }
+
     setBookmarkUploadState({ state: "COMPLETED" });
   });
 };
@@ -65,4 +86,4 @@ chrome.bookmarks.onRemoved.addListener(async (id, bookmark) => {
 openSidePanelOnActionClick();
 setTimeout(() => {
   initiateBookmarkCaching();
-}, 2000);
+}, 1000);

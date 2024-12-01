@@ -2,8 +2,8 @@ import { FormikHelpers } from "formik";
 import { BOOKMARK_DESCRIPTIONS_STORE_KEY } from "../constants";
 import { NodeModel } from "@minoru/react-dnd-treeview";
 
-export type CustomObject = {
-  [key: string]: string;
+export type CustomObject<T = string> = {
+  [key: string]: T;
 };
 
 export type MessageData<T, D> = {
@@ -75,4 +75,10 @@ export type DragAndDropNode = NodeModel & {
     BookmarkNode,
     "url" | "unmodifiable" | "dateAdded" | "dateGroupModified" | "index"
   >;
+};
+
+export type BookmarkDescriptionBatchRequestState = {
+  completed: number;
+  pending: number;
+  nextBatch: BookmarkNode[];
 };
