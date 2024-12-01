@@ -46,7 +46,12 @@ export const getFallback = <T, U>(val1: T, val2: U) => {
 };
 
 export const sendMessage = (id: string, data: CustomObject<unknown>) => {
-  chrome.runtime.sendMessage({ id, data });
+  chrome.runtime.sendMessage({ id, data }, () => {
+    if (chrome.runtime.lastError) {
+      console.log("No Receiver for message!!");
+      return;
+    }
+  });
 };
 
 export const listenToMessage = <T>(id: string, callback: (data: T) => void) => {
