@@ -11,7 +11,7 @@ const DefaultLayout = ({ children }: Props) => {
   return (
     <div>
       <Header />
-      <div className="px-2">{children}</div>
+      <div className="px-2 pt-1">{children}</div>
       <Toaster />
       <CustomAlert />
     </div>

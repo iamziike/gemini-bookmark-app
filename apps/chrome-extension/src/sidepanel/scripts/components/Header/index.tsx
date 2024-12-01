@@ -6,7 +6,7 @@ import { GITHUB_REPO } from "@constants/index";
 
 const Header = () => {
   return (
-    <header className="position-sticky top-0 left-0 bg-primary pb-3 z-3">
+    <header className="position-sticky top-0 left-0 bg-primary z-3">
       <div className="d-flex justify-content-between align-items-center shadow-sm text-center p-3 px-2">
         <div className="">
           <img src={logoImage} alt="Logo" width={200} />

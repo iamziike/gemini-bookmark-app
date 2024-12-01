@@ -101,6 +101,7 @@ const BookmarkDescriptionGenerateProgess = () => {
           style={{
             overflow: "hidden",
             textOverflow: "ellipsis",
+            height: 21,
           }}
         >
           <div
