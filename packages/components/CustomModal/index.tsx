@@ -1,7 +1,6 @@
 import React from "react";
 import clsx from "clsx";
 import closeIcon from "@assets/images/close.svg";
-import classNames from "./CustomModal.module.css";
 import { Modal, ModalProps } from "react-bootstrap";
 
 interface CustomModalProps extends Pick<ModalProps, "container"> {
@@ -32,7 +31,7 @@ const CustomModal = ({
       backdrop="static"
       size={modalSize}
       show={Boolean(visible)}
-      className={clsx(className, classNames?.modal)}
+      className={clsx(className)}
       backdropClassName="zIndex-1055"
       contentClassName="zIndex-1055"
       {...props}
