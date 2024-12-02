@@ -94,6 +94,7 @@ const BookmarkDescriptionGenerateProgess = () => {
       <div
         className={clsx("ps-2", {
           "pe-2": widthOverflow?.isOverflow || state?.percentage > 97,
+          "d-none": !state.description,
         })}
       >
         <div

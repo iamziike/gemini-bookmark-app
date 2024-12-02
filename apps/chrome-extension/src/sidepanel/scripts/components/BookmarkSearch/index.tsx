@@ -7,15 +7,25 @@ import CustomTextArea from "@components/CustomTextArea";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import Loading from "@components/Loading";
 import customYupValidation from "@constants/validationSchemas";
-import { SIDE_PANEL_PAGES } from "@chrome-extension/src/constants";
+import {
+  INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY,
+  SIDE_PANEL_PAGES,
+} from "@chrome-extension/src/constants";
 import { Link } from "react-router-dom";
 import { Form, Formik } from "formik";
-import { copyToClipboard, formatDate } from "@utils/index";
+import {
+  copyToClipboard,
+  formatDate,
+  getLocalStorageData,
+  waitFor,
+} from "@utils/index";
 import { useInViewEffect } from "react-hook-inview";
 import {
   ApiPaginatedResponse,
   GetBookmarkDescriptionFromGemini,
+  INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE,
 } from "@chrome-extension/src/models";
+import useCustomAlert from "@components/CustomAlert/useCustomAlert";
 
 const FormYupValidation = yup.object({
   searchQuery: customYupValidation.searchQuery,
@@ -33,6 +43,7 @@ interface State {
 }
 
 const BookmarkSearch = () => {
+  const { showWarningAlert } = useCustomAlert();
   const { getLinksThatMatchSearch, getBookmarkFaviconURL } = useBookmarks();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setIsLoadMoreDataVisible] = useState(false);
@@ -53,8 +64,6 @@ const BookmarkSearch = () => {
   const loadMoreDataRef = useInViewEffect(
     ([entry]) => {
       if (entry.isIntersecting) {
-        console.log(state?.searchResults);
-
         handleFetchNewData(
           (state.searchResults?.page ?? 1) + 1,
           state?.searchQuery
@@ -83,13 +92,21 @@ const BookmarkSearch = () => {
         page: 1,
       });
 
-      updateState({
-        isSearching: false,
-        searchQuery,
-        searchResults: response,
-        isSearchResultsModalVisible: true,
-        isSearchValueFormModalVisible: false,
-      });
+      if (response?.type === "error" && response?.status === 429) {
+        await waitFor(5);
+        handleSubmit({ searchQuery });
+        return;
+      }
+
+      if (response?.type === "success") {
+        updateState({
+          isSearching: false,
+          searchQuery,
+          searchResults: response,
+          isSearchResultsModalVisible: true,
+          isSearchValueFormModalVisible: false,
+        });
+      }
     },
     [state]
   );
@@ -105,32 +122,65 @@ const BookmarkSearch = () => {
         page,
       });
 
-      const updatedSearch = {
-        isPageEnd: response?.isPageEnd ?? true,
-        page: response?.page ?? 1,
-        pageSize: response?.pageSize ?? 1,
-        totalRecords: response?.totalRecords ?? 1,
-        data: [
-          ...(state?.searchResults?.data ?? []),
-          ...(response?.data ?? []),
-        ],
-      };
+      if (response?.type === "error" && response?.status === 429) {
+        await waitFor(5);
+        handleFetchNewData(page, searchQuery);
+      }
 
-      updateState({
-        isSearching: false,
-        searchResults: updatedSearch,
-        isSearchResultsModalVisible: true,
-        isSearchValueFormModalVisible: false,
-      });
+      if (response?.type === "success") {
+        const updatedSearch = {
+          isPageEnd: response?.isPageEnd ?? true,
+          page: response?.page ?? 1,
+          pageSize: response?.pageSize ?? 1,
+          totalRecords: response?.totalRecords ?? 1,
+          data: [
+            ...(state?.searchResults?.data ?? []),
+            ...(response?.data ?? []),
+          ],
+        };
+
+        updateState({
+          isSearching: false,
+          searchResults: updatedSearch,
+        });
+      }
     },
     [state]
   );
+
+  const getBookmarkDescriptionGenerateState = async () => {
+    const response =
+      await getLocalStorageData<INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE>(
+        INITIAL_BOOKMARKS_GENERATE_STATE_STORE_KEY
+      );
+
+    if (response?.state === "PENDING") {
+      showWarningAlert({
+        content: {
+          title: "Bookmarks Search",
+          message:
+            "We are currently processing all your existing bookmarks. Searching for bookmarks may be incomplete",
+        },
+        buttons: {
+          proceed: {
+            label: "Proceed",
+          },
+        },
+        onProceed() {
+          updateState({ isSearchValueFormModalVisible: true });
+        },
+      });
+      return;
+    }
+
+    updateState({ isSearchValueFormModalVisible: true });
+  };
 
   return (
     <>
       <Link
         to={SIDE_PANEL_PAGES.HOME}
-        onClick={() => updateState({ isSearchValueFormModalVisible: true })}
+        onClick={getBookmarkDescriptionGenerateState}
         className="list-unstyled btn btn-primary d-flex align-items-center"
       >
         <img src={searchImage} alt="search image" /> Search
@@ -200,9 +250,9 @@ const BookmarkSearch = () => {
             Results
           </h4>
           <div
-            id="infiniteBookmarkScroll"
             className="hide-scroll-bar"
             style={{
+              minHeight: "50px",
               maxHeight: "50vh",
               overflowY: "scroll",
               overflowX: "hidden",
@@ -236,22 +286,22 @@ const BookmarkSearch = () => {
                 </div>
               ))}
 
-              {!state.searchResults?.data?.length && (
-                <div className="text-center my-3">
-                  <div>Nothing To See</div>
-                </div>
-              )}
+              {!state.searchResults?.data?.length &&
+                state?.searchResults?.isPageEnd &&
+                !state?.isSearching && (
+                  <div className="text-center my-3">
+                    <div>Nothing To See</div>
+                  </div>
+                )}
 
               {state?.isSearching && (
-                <div className="text-center w-100">
+                <div className={"text-center w-100"}>
                   <Loading isLoading size="small" />
                 </div>
               )}
 
               {!state?.searchResults?.isPageEnd && !state?.isSearching && (
-                <div ref={loadMoreDataRef} className="text-center w-100">
-                  Load more data
-                </div>
+                <div ref={loadMoreDataRef} className="text-center w-100" />
               )}
             </div>
           </div>

@@ -7,7 +7,6 @@ import {
   MAX_GEMINI_REQUEST_PER_BATCH,
 } from "../constants";
 import {
-  ApiPaginatedResponse,
   INITIAL_BOOKMARK_DESCRIPTION_GENERATE_STATE,
   BookmarkNode,
   CachedBookmarkDescription,
@@ -118,8 +117,9 @@ const makePrompt = async <T>(prompt: string) => {
     const data = transformGeminiResponseToJSON<T>(result.response.text());
 
     return {
+      type: "success",
       data,
-    };
+    } as const;
   } catch (err) {
     const error = err as { status: number; message: string };
 
@@ -128,7 +128,7 @@ const makePrompt = async <T>(prompt: string) => {
       data: null,
       status: error?.status,
       message: error?.message,
-    };
+    } as const;
   }
 };
 
@@ -218,7 +218,7 @@ export const searchBookmarkDescriptions = async function ({
 }: {
   searchQuery: string;
   page: number;
-}): Promise<ApiPaginatedResponse<GetBookmarkDescriptionFromGemini[]> | null> {
+}) {
   const descriptions = await getCachedBookmarkDescriptions();
   const request = Object.keys(descriptions).map((id) => ({
     id,
@@ -236,28 +236,26 @@ export const searchBookmarkDescriptions = async function ({
     bookmarkCreatedAt: "UTC",
   });
 
-  try {
-    const prompt = `I am going to drop a list of links ${JSON.stringify(descriptionsToUse[page - 1])}. 
-        And I want you to filter and return the objects that its description, url or title matches or resembles this query: ${searchQuery}.
-        The response should look like [${responseStructure}, ${responseStructure}].
-        I just want only the json data structure, no extra text is needed.
-        I want the response to start with '[' and end with ']'. 
-        And within it should be an array [${responseStructure}]. Got it?`;
+  const prompt = `I am going to drop a list of links ${JSON.stringify(descriptionsToUse[page - 1])}. 
+      And I want you to filter and return the objects that its description, url or title matches or resembles this query: ${searchQuery}.
+      The response should look like [${responseStructure}, ${responseStructure}].
+      I just want only the json data structure, no extra text is needed.
+      I want the response to start with '[' and end with ']'. 
+      And within it should be an array [${responseStructure}]. Got it?`;
 
-    const { data } =
-      await makePrompt<GetBookmarkDescriptionFromGemini[]>(prompt);
+  const response = await makePrompt<GetBookmarkDescriptionFromGemini[]>(prompt);
 
-    return {
-      data,
-      page,
-      totalRecords: descriptionsToUse.length,
-      pageSize: MAX_GEMINI_REQUEST_PER_BATCH,
-      isPageEnd: descriptionsToUse.length === page,
-    };
-  } catch (err) {
-    console.log(err);
-    return null;
+  if (response?.type === "error") {
+    return response;
   }
+
+  return {
+    ...response,
+    page,
+    totalRecords: descriptionsToUse.length,
+    pageSize: MAX_GEMINI_REQUEST_PER_BATCH,
+    isPageEnd: descriptionsToUse.length === page,
+  };
 };
 
 export const getInitialBookmarkDescriptionGenerateState = async () => {

@@ -16,6 +16,14 @@ const openSidePanelOnActionClick = () => {
     .catch((error) => console.error(error));
 };
 
+const keepAlive = () => {
+  setInterval(() => {
+    chrome.runtime.getPlatformInfo(function (info) {
+      console.log("Keeping service worker alive. Platform: " + info.os);
+    });
+  }, 5000);
+};
+
 // Even if you use another bookmark app this extension will always be up-to-date
 const initiateBookmarkCaching = async () => {
   const bookmarkDescriptionGenerateState =
@@ -24,18 +32,25 @@ const initiateBookmarkCaching = async () => {
     return;
   }
 
+  keepAlive();
+
   chrome.bookmarks.getTree(async (tree) => {
     const links = getAllBookmarkedLinks(tree);
     const response = await generateBookmarkDescriptions(
       links,
       ({ currentDescriptions, links, nextBatch }) => {
         const completed = Object.keys(currentDescriptions).length;
+        const pending = links.length - completed;
         const data: BookmarkDescriptionBatchRequestState = {
           completed,
           nextBatch,
-          pending: links.length - completed,
+          pending,
         };
         sendMessage(INITIAL_BOOKMARKS_GENERATE_BATCH_REQUEST_STORE_KEY, data);
+
+        if (!pending) {
+          setInitialBookmarkDescriptionGenerateState({ state: "COMPLETED" });
+        }
       }
     );
 
@@ -44,8 +59,6 @@ const initiateBookmarkCaching = async () => {
       initiateBookmarkCaching();
       return;
     }
-
-    setInitialBookmarkDescriptionGenerateState({ state: "COMPLETED" });
   });
 };
 
@@ -85,6 +98,4 @@ chrome.bookmarks.onRemoved.addListener(async (id, bookmark) => {
 });
 
 openSidePanelOnActionClick();
-setTimeout(() => {
-  initiateBookmarkCaching();
-}, 1000);
+initiateBookmarkCaching();
