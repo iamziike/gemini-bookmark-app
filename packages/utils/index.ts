@@ -8,6 +8,10 @@ export const copyToClipboard = (text?: string) => {
   });
 };
 
+export const openInNewWindow = (text?: string) => {
+  window.open(text, "_blank");
+};
+
 export const splitArrayTo2D = <T>({
   list,
   noOfElementsPerArray,

@@ -8,8 +8,8 @@ import CustomModal from "@components/CustomModal";
 import useCustomAlert from "@components/CustomAlert/useCustomAlert";
 import useBookmarks from "@chrome-extension/src/hooks/useBookmarks";
 import BookmarkForm from "../BookmarkForm";
+import { openInNewWindow } from "@utils/index";
 import { NodeModel, useDragOver } from "@minoru/react-dnd-treeview";
-import { copyToClipboard } from "@utils/index";
 import { isBookmarkALink } from "@chrome-extension/src/services/bookmark";
 import {
   BookmarkNode,
@@ -64,8 +64,8 @@ const BookmarkFolder = ({
     });
   };
 
-  const handleCopyToClipboard = (url: string) => {
-    copyToClipboard(url);
+  const handleOpenInNewWindow = (url: string) => {
+    openInNewWindow(url);
   };
 
   const handleDeleteBookmark = (bookmark: BookmarkNode) => {
@@ -104,7 +104,7 @@ const BookmarkFolder = ({
             <div
               className="ellipsis pointer"
               onClick={() => {
-                handleCopyToClipboard(bookmark?.url ?? "");
+                handleOpenInNewWindow(bookmark?.url ?? "");
               }}
             >
               {bookmark?.title}

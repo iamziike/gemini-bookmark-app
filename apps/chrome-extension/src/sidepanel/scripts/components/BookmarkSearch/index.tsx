@@ -14,7 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { Form, Formik } from "formik";
 import {
-  copyToClipboard,
+  openInNewWindow,
   formatDate,
   getLocalStorageData,
   waitFor,
@@ -264,7 +264,7 @@ const BookmarkSearch = () => {
                   key={bookmark.id}
                   className="d-flex align-items-center pointer gap-2 font-family-secondary text-nowrap"
                   onClick={() => {
-                    copyToClipboard(bookmark.url);
+                    openInNewWindow(bookmark.url);
                   }}
                 >
                   <div className="d-flex align-items-center">
