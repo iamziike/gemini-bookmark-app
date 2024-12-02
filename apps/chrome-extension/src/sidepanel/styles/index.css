@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "itim";
+  src:
+    url("../../assets/fonts/itim/Itim-Regular.ttf") format("opentype"),
+    url("../../assets/fonts/itim/Itim-Regular.ttf") format("woff");
+}
+
 :root {
   --deep-blue: #2589e6;
   --white: #fff;
